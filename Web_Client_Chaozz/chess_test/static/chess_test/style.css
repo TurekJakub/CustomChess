@@ -1,0 +1,34 @@
+
+.floatLabel{
+    text-align: center;
+}
+h2{
+    color:whitesmoke;
+    size: 10mm;
+    text-align: center;
+}
+h1{
+    color: whitesmoke;
+    text-align: center;
+    size: 15mm;
+}
+.backgroundImage{
+    background-image: url("background.png");   
+    background-size: cover;    
+    background-position: center;
+    height: 100vh;
+     
+}
+.mainMenu{
+    height: 250px; 
+    border: 1px;
+    border-color: brown;
+}
+h2{
+    color:whitesmoke;
+    size: 10mm;
+    text-align: center;
+}
+table{
+    border-collapse: collapse;
+}
