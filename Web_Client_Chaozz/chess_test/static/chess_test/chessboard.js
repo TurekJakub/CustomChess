@@ -1,80 +1,72 @@
 let widthS;
 let heightS;
+let aS;
+let figures = null;
+let positions = null;
+let selected = false;
 
-function generateChessboard(height, width) {
-  const body = document.body;
-  tbl = document.createElement('table');
-  for (let i = 0; i < height; i++) {
-    let tr = document.createElement("tr");
-    for (let j = 0; j < width; j++) {
-      let td = document.createElement("td");
-      td.setAttribute("id", 8 * (i + 1) + j)
-      td.style.width = '50px';
-      td.style.height = '50px';
-      td.style.border = '1px solid black';
-      td.addEventListener("mousedown", test)
-      if ((j + i) % 2 == 0) {
-        td.style.backgroundColor = 'black';
-        let text = document.createTextNode("Čest práci, soudruhu");
-        td.appendChild(text);
-      }
-      tr.appendChild(td);
-    }
-    tbl.appendChild(tr);
-  }
-  body.appendChild(tbl);
-
-
-}
-function createF(x) {
-  const t = document.getElementById(x);
-  let b = document.createElement("div");
-  b.setAttribute("class", "test");
-  b.setAttribute("onclick", "a()");
-  b.style.backgroundColor = 'red';
-  b.style.height = '50px';
-  b.style.width = '50px';
-  //  b.style.left = '50px';
-  t.appendChild(b);
-
-
-}
-function a() {
-  $.post("",
-    {
-      name: "Donald Duck",
-      city: "Duckburg"
+async function getFigures() {
+  let fig;
+  await $.ajax({
+    url: '',
+    type: 'post',
+    data: {
+      requested: 'fig'
     },
-    function (data, status) {
-      console.log(data.s)
-    });
 
+    success: function (response) {
+      fig = response.fig;
+      //console.log(fig["pawn"]);
+    },
+
+
+  });  
+  return fig;
 }
-function test(lis) {
-  console.log("OwO")
+
+async function getPositions() {
+  let positions;
+  await $.ajax({
+    url: '',
+    type: 'post',
+    data: {
+      requested: 'pos'
+    },
+
+    success: function (response) {
+      positions = response.pos;
+      console.log(positions["pawn"][0]);
+    },
+
+
+  });
+  return positions;
 }
 function drawChessboard(height, width) {
   heightS = height;
   widthS = width;
 
-  let ctx = document.getElementById("canvas").getContext("2d");
+  let can = document.getElementById("canvas")
+  let ctx = can.getContext("2d");
   let a;
+
+
   if (screen.width < 500) {
     ctx.canvas.width = screen.width
     ctx.canvas.height = screen.width
-    a = screen.width/width;
+    a = screen.width / width;
   }
   else {
     ctx.canvas.width = (window.innerWidth - window.innerWidth / 2);
     ctx.canvas.height = (window.innerWidth - window.innerWidth / 2);
-    a = (window.innerWidth - window.innerWidth / 2)/ width;
+    a = (window.innerWidth - window.innerWidth / 2) / width;
   }
 
-  
+
   console.log(a);
   console.log(screen.width);
   console.log((screen.width - screen.width / 5));
-
+  aS = a;
 
   for (let y = 0; y < height; y++) {
 
@@ -88,7 +80,63 @@ function drawChessboard(height, width) {
     }
   }
 
+
+
+
+
 }
+
+async function handleClickCanvas(event) {
+
+  let canvas = document.getElementById('canvas');
+  let ctx = canvas.getContext('2d');
+
+  const rect = canvas.getBoundingClientRect()
+  const x = event.clientX - rect.left
+  const y = event.clientY - rect.top
+
+  console.log("x: " + x + " y: " + y)
+
+  if (figures === null) {
+
+    figures = await getFigures();
+  }
+  if (positions === null) {
+
+    positions = await getPositions();
+  }
+  if (!selected) {
+    ctx.save();
+    console.log("saved");
+  }
+
+  for (let key in figures) {
+    let coordinates = figures[key];
+    if (((x > coordinates[0] * aS) && (x < (coordinates[0] * aS) + aS)) && ((y > coordinates[1] * aS && (y < (coordinates[1] * aS) + aS)))) {
+      console.log('in');
+      if (selected) {
+        ctx.restore();
+      }
+      selected = true;
+      markMoves(positions[key], ctx);
+      return;
+
+    }
+  }
+}
+
+function markMoves(moves, ctx) {
+  console.log(moves);
+  for (let move in moves) {
+    move = moves[0];
+    ctx.beginPath();
+    ctx.arc(move[0] * aS - aS / 2, move[1] * aS - aS / 2, aS / 4, 0, 2 * Math.PI);
+    ctx.fillStyle = 'red';
+    ctx.fill();
+    ctx.stroke();
+  }
+}
+
 function rescaleCanvas() {
   drawChessboard(heightS, widthS);
 }
