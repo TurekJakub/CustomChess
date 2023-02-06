@@ -21,7 +21,7 @@ def game(request):
          if(request.POST.get('requested') == 'fig'):
             return JsonResponse({'fig':{'pawn': ['1','0']}})
          elif(request.POST.get('requested') =='pos'):
-             return JsonResponse({'pos':{'pawn': [['1','2']]}})
+             return JsonResponse({'pos':{'pawn': [['2','2']]}})
  
     context = {"my_list": ["item1", "item2"], "a" : 7, "b" : 6}
     print("Změna")

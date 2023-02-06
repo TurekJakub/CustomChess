@@ -9,15 +9,18 @@
     integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     {% load static %}
     <script src="{% static 'chess_test/chessboard.js' %}"></script>
+   <!-- <script type="text/javascript"> redrawCanvas();</script> -->
     <title>Custom Chess</title>
 </head>
 
-<body onresize="rescaleCanvas()">
+<body onresize="redrawCanvas()">
     <div class="container d-flex flex-row justify-content-center">
-        <canvas id="canvas" onclick="handleClickCanvas(event)"></canvas>
+        <canvas id="canvas-background" style="position: absolute; z-index: 0" ></canvas>
+        <canvas id="canvas-figures" style="position: absolute; z-index: 1" ></canvas>
+        <canvas id="canvas-moves" style="position: absolute; z-index: 2" onclick="handleClickCanvas(event)"></canvas>
     </div>
     <script>       
-        drawChessboard(8,8);       
+       drawCanvas(8,8);
     </script>
 </body>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
