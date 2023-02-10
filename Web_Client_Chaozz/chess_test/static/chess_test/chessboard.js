@@ -4,7 +4,9 @@ let a;
 let figures = null;
 let positions = null;
 let selected = false;
+let path = null;
 let moves = [];
+let lastSelected = null;
 
 async function getFigures() {
   let fig;
@@ -17,12 +19,31 @@ async function getFigures() {
 
     success: function (response) {
       fig = response.fig;
-      //console.log(fig["pawn"]);
+     
     },
 
 
-  });  
+  });
   return fig;
+}
+async function sendMove(x, y) {
+
+  await $.ajax({
+    url: '',
+    type: 'post',
+    data: {
+      requested: 'post-fig',
+      move: x + ':' + y
+    },
+
+    success: function (response) {
+
+      console.log('s');
+    },
+
+
+  });
+
 }
 
 async function getPositions() {
@@ -43,14 +64,13 @@ async function getPositions() {
   });
   return positions;
 }
+function setPath(pathname) {
+  path = pathname
+}
 function drawChessboard() {
 
   let can = document.getElementById("canvas-background")
   let ctx = can.getContext("2d");
-
-  console.log(a);
-  console.log(screen.width);
-  console.log((screen.width - screen.width / 5));
 
   for (let y = 0; y < height; y++) {
 
@@ -63,13 +83,8 @@ function drawChessboard() {
       ctx.fillRect(x * a, y * a, a, a);
     }
   }
-
-
-
-
-
 }
-function resizeCanvas(canvas){
+function resizeCanvas(canvas) {
   if (screen.width < 500) {
     canvas.width = screen.width
     canvas.height = screen.width
@@ -83,15 +98,11 @@ function resizeCanvas(canvas){
 }
 
 async function handleClickCanvas(event) {
-
   let canvas = document.getElementById('canvas-background');
-  let ctx = canvas.getContext('2d');
 
   const rect = canvas.getBoundingClientRect()
   const x = event.clientX - rect.left
-  const y = event.clientY - rect.top
-
-  console.log("x: " + x + " y: " + y)
+  const y = event.clientY - rect.top 
 
   if (figures === null) {
 
@@ -102,68 +113,80 @@ async function handleClickCanvas(event) {
     positions = await getPositions();
   }
 
-
   for (let key in figures) {
     let coordinates = figures[key];
-    if (((x > coordinates[0] * a) && (x < (coordinates[0] * a) + a)) && ((y > coordinates[1] * a && (y < (coordinates[1] * a) + a)))) {
-      console.log('in');
+    if (inRange(x, coordinates[0]) && inRange(y, coordinates[1])) {
+     
       if (selected) {
-        unmarkMoves(moves,document.getElementById('canvas-moves').getContext('2d'));
+        unmarkMoves(document.getElementById('canvas-moves').getContext('2d'));
       }
-      selected = true;
       moves = positions[key];
       markMoves(moves, document.getElementById('canvas-moves').getContext('2d'));
+      lastSelected = key;
+      selected = true;
 
 
     }
-    //else if(selected){
-
-    //}
+    else if (selected && positions[lastSelected].includes((Math.floor(x / a) + 1) + ':' + (Math.floor(y / a) + 1))) {
+      console.log(lastSelected + ' was moved at x: ' + x + ', y: ' + y);
+      sendMove((Math.floor(x / a) + 1), (Math.floor(y / a) + 1));
+      unmarkMoves(document.getElementById('canvas-moves').getContext('2d'));
+      selected = false;
+    }
     else {
-      unmarkMoves(moves,document.getElementById('canvas-moves').getContext('2d'));
+      unmarkMoves(document.getElementById('canvas-moves').getContext('2d'));
+      selected = false
     }
   }
 }
-
-function markMoves(moves, ctx) {
-  console.log(moves);
-  for (let i =0; i<moves.length; i++) {
-    let move = moves[i];
+function inRange(value, rangeBorder) {
+  return value > rangeBorder * a && value < rangeBorder * a + a
+}
+function markMoves(moves, ctx) { 
+  for (let i = 0; i < moves.length; i++) {
+    let move = moves[i].split(':');
     ctx.beginPath();
     ctx.arc(move[0] * a - a / 2, move[1] * a - a / 2, a / 4, 0, 2 * Math.PI);
     ctx.fillStyle = 'red';
     ctx.fill();
     ctx.stroke();
   }
+  ctx = document.getElementById('canvas-figures').getContext('2d');
 }
-function drawFigures(figures, ctx){
-  for (let  i =0; i<figures.length;i++){
-    ctx.beginPath();
-    ctx.arc(figures[i][0] * a - a / 2, figures[i][1] * a - a / 2, a / 4, 0, 2 * Math.PI);
-    ctx.fillStyle = 'blue';
-    ctx.fill();
-    ctx.stroke();
+function drawFigures(figure, ctx) {
+  for (const [figur, position] of Object.entries(figure)) {
+    img = new Image();
+    img.onload = function () {
+      ctx.drawImage(img, position[0] * a , position[1] *a, a, a);
+      console.log( path + '/' + figur + '.svg')
+    };
+    img.src = path + '/' + figur + '.svg';
   }
+
 }
-function unmarkMoves(moves, ctx){
- ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);
-}
-function resizeAllLayers(){
+function unmarkMoves( ctx){
+  ctx.clearRect(0,0,ctx.canvas.width,ctx.canvas.height);
+ }
+function resizeAllLayers() {
   resizeCanvas(document.getElementById('canvas-background'));
   resizeCanvas(document.getElementById('canvas-figures'));
   resizeCanvas(document.getElementById('canvas-moves'));
 
 }
 
-function redrawCanvas(){
-  drawCanvas(height,width)
+function redrawCanvas() {
+  drawCanvas(height, width)
 }
-function drawCanvas(heightc,widthc) {
+async function drawCanvas(heightc, widthc) {
   height = heightc;
   width = widthc;
+  if (figures === null) {
+
+    figures = await getFigures();
+  }
   resizeAllLayers();
   drawChessboard(height, width);
-  drawFigures([[2,1]], document.getElementById('canvas-figures').getContext('2d'));
-  markMoves(moves,document.getElementById('canvas-moves').getContext('2d'));
+  drawFigures(figures, document.getElementById('canvas-figures').getContext('2d'));
+  markMoves(moves, document.getElementById('canvas-moves').getContext('2d'));
 
 }
