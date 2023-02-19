@@ -22,7 +22,7 @@ def game(request):
    
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
          if(request.POST.get('requested') == 'fig'):
-            return JsonResponse({'fig':{'pawn': ['1','0']}})
+            return JsonResponse({'fig':{'pawn': ['2','1']}})
          elif(request.POST.get('requested') =='pos'):
              return JsonResponse({'pos':{'pawn': ['2:2','2:3']}})
          elif(request.POST.get('requested') =='post-fig'):
