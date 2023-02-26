@@ -18,62 +18,34 @@ let forward;
 let img = new Image();
 
 // AJAX calls for data specified by requested parameter
-async function getFigures() {
-  let fig;
+
+async function doAjaxCall(requested) {
+  let data;
   await $.ajax({
     url: '',
     type: 'post',
     data: {
-      requested: 'fig'
+      requested: requested
     },
 
     success: function (response) {
-      fig = response.fig;
-      console.log(response)
-
+      data = response[requested];    
     },
 
 
   });
-  return fig;
+  return data;
 }
+// ajax call to send data to server
 async function sendMove(x, y) {
-
   $.ajax({
     url: '',
     type: 'post',
     data: {
       requested: 'post-fig',
       move: x + ':' + y
-    },
-
-    success: function (response) {
-
-      console.log('s');
-    },
-
-
+    }, 
   });
-
-}
-
-async function getPositions() {
-  let positions;
-  await $.ajax({
-    url: '',
-    type: 'post',
-    data: {
-      requested: 'pos'
-    },
-
-    success: function (response) {
-      positions = response.pos;
-      console.log(positions["pawn"][0]);
-    },
-
-
-  });
-  return positions;
 }
 // set path to game's temporary files directory
 function setPath(pathname) {
@@ -96,18 +68,21 @@ function drawChessboard() {
     }
   }
 }
+function calculateNewSquerSize(){
+  if(window.innerWidth>576){
+ // if(window.innerWidth>window.innerHeight){
+   a = Math.min(window.innerHeight/height,(window.innerWidth - window.innerWidth/2)/width)
+  }
+  else{
+   a =  Math.min((window.innerHeight -window.innerHeight/2)/height,window.innerWidth/width)
+  }
+  
+}
 // resize given canvas to half of current window size or to screen width on small mobile dievices
 function resizeCanvas(canvas) {
-  if (screen.width < 500) {
-    canvas.width = screen.width
-    canvas.height = screen.width
-    a = screen.width / width;
-  }
-  else {
-    canvas.width = (window.innerWidth - window.innerWidth / 2);
-    canvas.height = (window.innerWidth - window.innerWidth / 2);
-    a = (window.innerWidth - window.innerWidth / 2) / width;
-  }
+  canvas.width = width*a
+  canvas.height = height*a
+  
 }
 // handel user's click on chessboar - call required functions depending on cursor cordinates
 async function handleClickCanvas(event) {
@@ -121,12 +96,12 @@ async function handleClickCanvas(event) {
   // getting figures and their possible moves
   if (figures === null) {
 
-    figures = await getFigures();   
+    figures = await doAjaxCall('fig');   
     
   }
   if (positions === null) {
 
-    positions = await getPositions();
+    positions = await doAjaxCall('pos');
   }
 
   for (let key in figures) {
@@ -189,6 +164,7 @@ function unmarkMoves(ctx) {
 }
 // resize all canvases - layers of chessboard
 function resizeAllLayers() {
+  calculateNewSquerSize();
   resizeCanvas(document.getElementById('canvas-background'));
   resizeCanvas(document.getElementById('canvas-figures'));
   resizeCanvas(document.getElementById('canvas-moves'));
@@ -204,7 +180,7 @@ async function drawCanvas(heightc, widthc) {
   width = widthc;
   if (figures === null) {
 
-    figures = await getFigures();
+    figures = await doAjaxCall('fig');
   }
   resizeAllLayers();
   drawChessboard(height, width);

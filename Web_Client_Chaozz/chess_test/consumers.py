@@ -1,17 +1,37 @@
 import json
 
 from channels.generic.websocket import WebsocketConsumer
+from asgiref.sync import async_to_sync
 
 
 class ChatConsumer(WebsocketConsumer):
     def connect(self):
         self.accept()
+        print('accept')
+        async_to_sync(self.channel_layer.group_add)(
+            'events',
+            self.channel_name
+        )
+        
 
     def disconnect(self, close_code):
-        pass
+         async_to_sync(self.channel_layer.group_discard)(
+            'events',
+            self.channel_name
+        )
+        
+    def receive(self, text):
 
-    def receive(self, text_data):
-        text_data_json = json.loads(text_data)
-        message = text_data_json["message"]
+        self.send('kdjjs')
 
-        self.send(text_data=json.dumps({"message": message}))
+    def send_message(self, res):
+        """ Receive message from room group """
+        # Send message to WebSocket
+        self.send(text_data=json.dumps({
+            "payload": res,
+        }))
+    def events_alarm(self, event):
+        print("UwU//")
+        self.send_message(event['content'])
+       
+  
