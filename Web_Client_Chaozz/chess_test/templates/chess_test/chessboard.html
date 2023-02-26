@@ -6,67 +6,68 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     {% load static %}
     <script src="{% static 'chess_test/chessboard.js' %}"></script>
     <script>setPath("{% static 'temp' %}")</script>
-   <!-- <script type="text/javascript"> redrawCanvas();</script> -->
+    <!-- <script type="text/javascript"> redrawCanvas();</script> -->
     <title>Custom Chess</title>
 </head>
 
 <body onresize="redrawCanvas()">
-    <div class="container d-flex flex-row justify-content-center">
-        <canvas id="canvas-background" style="position: absolute; z-index: 0" ></canvas>
-        <canvas id="canvas-figures" style="position: absolute; z-index: 1" ></canvas>
-        <canvas id="canvas-moves" style="position: absolute; z-index: 2"></canvas>
-        <canvas id="canvas-animations" style="position: absolute; z-index: 3" onclick="handleClickCanvas(event)"></canvas>
+    <div class="row vh-100 ">
+        <div class="col-3 d-flex justify-content-center" id="display_1"></div>
+        <div class="col-6 d-flex justify-content-center align-items-center">
+            <canvas id="canvas-background" style="position: absolute; z-index: 0"></canvas>
+            <canvas id="canvas-figures" style="position: absolute; z-index: 1"></canvas>
+            <canvas id="canvas-moves" style="position: absolute; z-index: 2"></canvas>
+            <canvas id="canvas-animations" style="position: absolute; z-index: 3"
+                onclick="handleClickCanvas(event)"></canvas>
+        </div>
+        <div class="col-3 d-flex justify-content-center" id="display_2"></div>
+
     </div>
-    <script>       
-       drawCanvas(8,8,{'pawn':[2,1]});
+    <script>
+        drawCanvas(6, 9, { 'pawn': [2, 1] });
     </script>
-     <script>
-        
+    <script>
 
         const chatSocket = new WebSocket(
             'ws://'
             + window.location.host
             + '/ws/game/'
-           
+
         );
-        chatSocket.onopen = function(e){
-            console.log('UwU');
+        chatSocket.onopen = function (e) {
+            console.log('UwU from WebSocket');
         }
 
-        chatSocket.onmessage = function(e) {
-            const data = JSON.parse(e.data);
-            document.querySelector('#chat-log').value += (data.message + '\n');
+        chatSocket.onmessage = function (e) {
+
+            console.log(e);
+            let cordinates = JSON.parse(e.data).payload.split(':');
+            console.log(cordinates);
+            setAnimationCordinates(cordinates[0], cordinates[1], cordinates[2], cordinates[3]);
+            drawAnimationFrame();
+
+            let x = document.getElementById('display_1')
+            let y = document.createElement('div')
+            y.innerHTML = 'UwU jsem tady'
+            y.setAttribute('class', 'h-25 bg-secondary w-100 rounded')
+            x.appendChild(y)
+
+
         };
 
-        chatSocket.onclose = function(e) {
-            console.error('Chat socket closed unexpectedly');
-        };
 
-        document.querySelector('#chat-message-input').focus();
-        document.querySelector('#chat-message-input').onkeyup = function(e) {
-            if (e.keyCode === 13) {  // enter, return
-                document.querySelector('#chat-message-submit').click();
-            }
-        };
 
-        document.querySelector('#chat-message-submit').onclick = function(e) {
-            const messageInputDom = document.querySelector('#chat-message-input');
-            const message = messageInputDom.value;
-            chatSocket.send(JSON.stringify({
-                'message': message
-            }));
-            messageInputDom.value = '';
-        };
+
     </script>
 </body>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
     crossorigin="anonymous"></script>
-   
+
 </html>
