@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div class="col-md-3 d-flex justify-content-center" id="display_1"></div>
+        <div class="col-md-6  d-flex justify-content-center align-items-center">
+            <canvas id="canvas-background" style="position: absolute; z-index: 0"></canvas>
+            <canvas id="canvas-figures" style="position: absolute; z-index: 1"></canvas>
+            <canvas id="canvas-moves" style="position: absolute; z-index: 2"></canvas>
+            <canvas id="canvas-animations" style="position: absolute; z-index: 3"
+                onclick="handleClickCanvas(event)"></canvas>
+        </div>
+        <div class="col-md-3  d-flex justify-content-center" id="display_2">
+            <div class="h-25 bg-secondary w-100 rounded">
+                <div class="w-100 h-50 d-flex align-items-center">
+                    <img class=" h-50 rounded me-auto d-flex align-items-center " src="{% static 'temp' %}/pawn.svg" alt="">
+                    <div class=" d-flex align-items-center ms-auto  ">UwU</div>
+                </div>
+                <canvas></canvas>
+            </div>
+        </div>
+
+</body>
+</html>
