@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+
+ {% extends "./base.html" %}
+ {% block title %}CustomChess{% endblock %}
+<body>
+    {% block body %}
+    <div class="container-fluid d-flex align-items-center justify-content-center" style="height: calc(100vh - 90px);">
+        <div class="w-25 d-flex justify-content-center align-content-center bg-secondary rounded">
+            
+            <form class="w-75 " method="post">
+                <h2>Přihlašte se</h2>
+                <div class="form-group">
+                    <label for="id_username">Uživatelské jmeno</label>
+                    <input class="form-control" id="id_username" name="username">
+
+                </div>
+                <div class="form-group">
+                    <label for="id_password">Heslo</label>
+                    <input type="password" class="form-control" id="id_password" placeholder="Password" name="password">
+                </div>           
+                <button class="form-control mt-1 bg-success border-success text-white" type="submit" class="btn btn-primary">Přihlásit</button>
+                <p class="text-danger">{{msg}}</p>
+            </form>
+        </div>
+    </div>
+    {% endblock %}
+
+</body>
+</html>
