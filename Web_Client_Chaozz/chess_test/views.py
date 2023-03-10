@@ -6,12 +6,9 @@ from .connection import *
 from .models import *
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
-from .forms import sign_up_form
+from .forms import sign_up_form, sign_in_form
 from django.contrib.auth.models import User
 from django.contrib.auth import login, authenticate
-
-# c = Connection()
-x = 0
 
 
 @csrf_exempt
@@ -29,32 +26,45 @@ def index(request):
 
 
 @csrf_exempt
-def sing_up(request):
-    form = sign_up_form()
-    template = loader.get_template('chess_test/signup.html')
+def sign_in(request):
+    msg = ''
     if (request.method == 'POST'):
-        print(request.POST.get('username'))
-        formm = sign_up_form(request.POST)
+        form = sign_in_form(request.POST)
 
-        if (formm.is_valid()):
-            print(x)
-            data = formm.cleaned_data
-            if(User.objects.filter(email = data['email'])):               
-                return render(request, 'chess_test/signup.html', context={'msg': 'You already have profile, sing in'})
-            if(User.objects.filter(username = data['username'])):               
-                return render(request, 'chess_test/signup.html', context={'msg': 'This username is already used'})
-            user = User.objects.create_user(username=data['username'],password=data['password'],email=data['email'])
-            #  user.save()
-            # user = authenticate(request, username=data['username'],password =data['password'])
+        if (form.is_valid()):
+            data = form.cleaned_data      
+            user = authenticate(request, username=data['username'],password =data['password'])
             if user is not None:
-              login(request, user)            
-              return redirect('game/')
+                login(request, user)
+                return redirect('game/')
+            else:
+                msg = 'fuck you'
+                print('fuck you')
+    return render(request, 'chess_test/index.html', context={'msg': msg})
+    
+
+
+@csrf_exempt
+def sign_up(request):
+   
+    if (request.method == 'POST'):
+        form = sign_up_form(request.POST)
+        if (form.is_valid()):
+            data = form.cleaned_data
+            if (User.objects.filter(email=data['email'])):
+                    return render(request, 'chess_test/signup.html', context={'msg': 'You already have profile, sing in'})
+            if (User.objects.filter(username=data['username'])):
+                    return render(request, 'chess_test/signup.html', context={'msg': 'This username is already used'})
+            user = User.objects.create_user(
+            username=data['username'], password=data['password'], email=data['email'])
+                #  user.save()
+                # user = authenticate(request, username=data['username'],password =data['password'])
+            if user is not None:
+                login(request, user)
+                return redirect('game/')
             else:
                 print('fuck you')
-    else:
-        formm = sign_up_form()
     return render(request, 'chess_test/signup.html', context={'msg': ''})
-
 
 @csrf_exempt
 def game(request):

@@ -18,13 +18,13 @@
             <h1 class="selectDisable me-auto">CUSTOM CHESS</h1>
             {% block nav_content_center%}{% endblock %}    
             <div class="nav-item dropdown d-none d-sm-block">
-                <button class=" px-0 mx-0 bg-dark  ms-auto rounded border border-secondary navButton"
+                <button class=" px-0 mx-0 bg-dark  ms-auto rounded border border-secondary navButton {% block profile_visibility %}{%endblock%}"
                     data-bs-toggle="dropdown" aria-expanded="false" style="height: 50px;
-                    width: 200px;">
+                    width: auto;">
                     <div class="w-100 d-flex align-items-center">
                         <img class=" rounded me-2 mt-1 ms-1 mb-1 d-flex align-items-center selectDisable border border-success"
-                            src="{% static 'temp' %}/pawn.svg" alt="" style="height: 40px; width: 40px;">
-                        <div class=" d-flex align-items-center me-5 selectDisable text-white">UwU</div>
+                           {%if signin %} src="{% static 'temp' %}/pawn.svg"{%else%} src="{% static 'chess_test' %}/bocchi.jpg" {% endif%}alt="" style="height: 40px; width: 40px;">
+                        <div class=" d-flex align-items-center ms-auto me-2 selectDisable text-white">{% if signin %}UwU{%else%}Bocchi the Rock!{% endif %}</div>
                     </div>
                 </button>
                 <div class="dropdown-menu dropdown-menu-center  bg-dark rounded">
