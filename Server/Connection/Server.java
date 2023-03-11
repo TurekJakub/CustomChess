@@ -1,5 +1,6 @@
 package org.connection;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -45,18 +46,14 @@ public class Server extends Thread {
             try {
                 socket = serverSocket.accept();
 
-                Sender.send(socket, "UwU");
-                gameStamp = Receiver.readData(socket);
-                name = Receiver.readData(socket);
-                System.out.println(name + gameStamp + queue.size());
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                System.out.println("Connection interrupted");
+                continue;
             }
 
-            if (!reconnect(gameStamp, socket)) {
 
-                handelNewClientConnection(new Client(socket, name));
-            }
+            startClientThread(socket);
+
         }
     }
 
@@ -104,19 +101,29 @@ public class Server extends Thread {
     public synchronized void connectNewClient(Client client) {
 
         clients.add(client);
-        startClientThread(client);
+
     }
 
+    // start new ClientThread with authentication sequence - for not previously authenticated clients
+    public synchronized void startClientThread(Socket socket) {
+        ClientThread clientThread = new ClientThread(gamesManager, this, socket, timeout);
+        clientThread.start();
+        clientsThreads.add(clientThread);
+
+    }
+
+    // start ClientThread for previously authenticated client
     public synchronized void startClientThread(Client client) {
         ClientThread clientThread = new ClientThread(gamesManager, this, client, timeout);
         clientThread.start();
         clientsThreads.add(clientThread);
 
     }
-    public synchronized void removeDeadThread(ClientThread clientThread){
+    // remove pointer of already interrupted ClientThread from list of managed threads
+    public synchronized void removeDeadThread(ClientThread clientThread) {
         clientsThreads.remove(clientThread);
     }
-
+    // add client to queue
     private void addToQueue(Client client) {
         try {
             Sender.send(client.getClientSocket(), "Ve frontě");
@@ -125,7 +132,7 @@ public class Server extends Thread {
         }
         queue.add(client);
     }
-
+    // refuse connection of client - when max connections limit is exceeded
     private void refuseConnection(Client client) {
         try {
             Sender.send(client.getClientSocket(), "K serveru se momentálně nedá připojit z důvodu nadměrného zatížení");
@@ -144,7 +151,7 @@ public class Server extends Thread {
         clientsThreads.remove(clientThread);
         clients.remove(inactiveClient);
     }
-
+    // remove already closed connections from queue
     public synchronized void removeClosedQueueConnection(Client inactiveClient) {
         try {
             inactiveClient.getClientSocket().close();

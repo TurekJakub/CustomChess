@@ -39,7 +39,7 @@ public class Game {
     private void sendGameFiles(List<File> files, Socket player) {
 
         try {
-            Sender.send(player, String.valueOf(files.size()));
+            Sender.send(player, "file:" + files.size());
             for (File file : files) {
                 Sender.sendFile(player, file);
             }
@@ -60,7 +60,7 @@ public class Game {
             player.setInGame(true);
 
             if (players.size() > 1) {
-                sendGameFiles(gameInfoFiles, player.getClientSocket());
+              //  sendGameFiles(gameInfoFiles, player.getClientSocket());
                 sendGameFiles(gameResources, player.getClientSocket());
             }
             if (players.size() == NUMBER_OF_PLAYERS) {
