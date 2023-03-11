@@ -1,4 +1,5 @@
 from django.shortcuts import render, HttpResponse, redirect
+from django.http import  HttpResponseForbidden
 from django.template import loader
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
@@ -9,6 +10,7 @@ from asgiref.sync import async_to_sync
 from .forms import sign_up_form, sign_in_form
 from django.contrib.auth.models import User
 from django.contrib.auth import login, authenticate
+from django.contrib.admin.views.decorators import staff_member_required
 
 
 @csrf_exempt
@@ -27,7 +29,7 @@ def index(request):
 
 @csrf_exempt
 def sign_in(request):
-    msg = ''
+    msg = ''  
     if (request.method == 'POST'):
         form = sign_in_form(request.POST)
 
@@ -42,7 +44,8 @@ def sign_in(request):
                 print('fuck you')
     return render(request, 'chess_test/index.html', context={'msg': msg})
     
-
+def sign_inm(request,uid,token):
+   return HttpResponse(token)
 
 @csrf_exempt
 def sign_up(request):
@@ -57,7 +60,7 @@ def sign_up(request):
                     return render(request, 'chess_test/signup.html', context={'msg': 'This username is already used'})
             user = User.objects.create_user(
             username=data['username'], password=data['password'], email=data['email'])
-                #  user.save()
+            user.save()
                 # user = authenticate(request, username=data['username'],password =data['password'])
             if user is not None:
                 login(request, user)
