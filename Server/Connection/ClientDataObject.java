@@ -2,6 +2,8 @@ package org.connection;
 
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
+import org.bson.types.ObjectId;
+
 /*
 *
 * Data class used for representing user data in database for ORM alternative of MongoDB
@@ -10,6 +12,8 @@ import dev.morphia.annotations.Id;
 @Entity("auth_user")
 public class ClientDataObject {
     @Id
+    String _id = new ObjectId().toString();
+    int id = 25;
     String username;
     String password;
     String email;

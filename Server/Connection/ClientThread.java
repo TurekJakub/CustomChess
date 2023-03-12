@@ -66,11 +66,13 @@ public class ClientThread extends Thread {
 
     public void authenticatedUser() throws IOException {
       // String authenticationString = Receiver.readBytes(connection);
-       ClientDataObject c = new ClientDataObject("skdjkjs","dskjfdskf","ajdkDJ@JDSAHJF",false);
+        PasswordHasher p = new PasswordHasher();
+        String x = p.getPasswordHash("123","rGNJTzTfz0UubTZjmXkUqi",390000);
+       ClientDataObject c = new ClientDataObject("UwU","pbkdf2_sha256$390000$rGNJTzTfz0UubTZjmXkUqi$"+x,"jan.lana@testovadlo.cz",true);
        dbConnection.save(c);
 
-       List<ClientDataObject> x =  dbConnection.find(ClientDataObject.class).filter(eq("active",false)).iterator().toList();
-        System.out.println(x.get(0).email);
+       List<ClientDataObject> xx =  dbConnection.find(ClientDataObject.class).filter(eq("username","UwU")).iterator().toList();
+        System.out.println(xx.get(0).email);
     }
 
     public static void main(String[] args) throws IOException {
