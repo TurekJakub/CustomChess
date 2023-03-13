@@ -2,15 +2,8 @@ package org.connection;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
 import dev.morphia.Datastore;
 import dev.morphia.Morphia;
-import dev.morphia.query.FindOptions;
-import dev.morphia.query.Query;
-import dev.morphia.query.Sort;
-import dev.morphia.query.experimental.filters.Filters;
-import org.bson.Document;
 
 import java.io.File;
 import java.io.IOException;
@@ -66,13 +59,19 @@ public class ClientThread extends Thread {
 
     public void authenticatedUser() throws IOException {
       // String authenticationString = Receiver.readBytes(connection);
-        PasswordHasher p = new PasswordHasher();
-        String x = p.getPasswordHash("123","rGNJTzTfz0UubTZjmXkUqi",390000);
-       ClientDataObject c = new ClientDataObject("UwU","pbkdf2_sha256$390000$rGNJTzTfz0UubTZjmXkUqi$"+x,"jan.lana@testovadlo.cz",true);
+        UserAuthenticator p = new UserAuthenticator();
+        String x = p.getPasswordHash("MamRadBocchi","rGNJTzTfz0UubTZjmXkUqi",390000);
+
+        List<AuthenticationToken>y = new ArrayList<>();
+        AuthenticationToken xxx =  new AuthenticationToken("UubTZjmXkUqi");
+
+        y.add(xxx);
+
+       ClientDataObject c = new ClientDataObject("Bocchi","pbkdf2_sha256$390000$rGNJTzTfz0UubTZjmXkUqi$"+x,"bocchi@testovadlo.cz",true,y);
        dbConnection.save(c);
 
-       List<ClientDataObject> xx =  dbConnection.find(ClientDataObject.class).filter(eq("username","UwU")).iterator().toList();
-        System.out.println(xx.get(0).email);
+       List<ClientDataObject> xx =  dbConnection.find(ClientDataObject.class).filter(eq("username","Bocchi")).iterator().toList();
+        System.out.println(xx.get(0).getTokens().get(0).getTokenHash());
     }
 
     public static void main(String[] args) throws IOException {
