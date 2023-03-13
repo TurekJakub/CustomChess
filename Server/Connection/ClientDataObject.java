@@ -4,26 +4,58 @@ import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
 import org.bson.types.ObjectId;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
 /*
-*
-* Data class used for representing user data in database for ORM alternative of MongoDB
-*
-* */
+ *
+ * Data class used for representing user data in database for ORM alternative of MongoDB
+ *
+ * */
 @Entity("auth_user")
 public class ClientDataObject {
     @Id
-    String _id = new ObjectId().toString();
-    int id = 25;
-    String username;
-    String password;
-    String email;
-    boolean active;
+    private String _id = new ObjectId().toString();
+    private int id = 25;
+    private String username;
+    private String password;
+    private String email;
+    private boolean is_active;
+    private Date last_login;
+    private List<AuthenticationToken> tokens = new ArrayList<>();
 
-    public ClientDataObject(String username, String password, String email, boolean active) {
+    public ClientDataObject(String username, String password, String email, boolean active, List<AuthenticationToken> tokens) {
         this.username = username;
         this.password = password;
         this.email = email;
-        this.active = active;
+        this.is_active = active;
+        this.tokens = tokens;
+        this.last_login = new Date(0);
+    }
+
+    public Date getLast_login() {
+        return last_login;
+    }
+
+    public void setLast_login(Date last_login) {
+        this.last_login = last_login;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public List<AuthenticationToken> getTokens() {
+        return tokens;
+    }
+
+    public void setTokens(List<AuthenticationToken> tokens) {
+        this.tokens = tokens;
     }
 
     public void setUsername(String username) {
@@ -39,7 +71,7 @@ public class ClientDataObject {
     }
 
     public void setActive(boolean active) {
-        this.active = active;
+        this.is_active = active;
     }
 
     public ClientDataObject() {
@@ -59,6 +91,6 @@ public class ClientDataObject {
     }
 
     public boolean isActive() {
-        return active;
+        return is_active;
     }
 }
