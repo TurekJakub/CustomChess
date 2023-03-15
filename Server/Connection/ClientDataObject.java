@@ -31,7 +31,7 @@ public class ClientDataObject {
         this.email = email;
         this.is_active = active;
         this.tokens = tokens;
-        this.last_login = new Date(0);
+        this.last_login = null;//new Date(0);
     }
 
     public Date getLast_login() {
