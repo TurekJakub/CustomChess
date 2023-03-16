@@ -5,3 +5,4 @@ Server/Connection/TestClient.java
 Server/Connection/test.java
 *.pyc
 *.pyc
+*.jar
