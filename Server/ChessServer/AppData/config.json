@@ -1,0 +1,11 @@
+{
+  "port": 443,
+  "queueLength": 2,
+  "numberOfClients": 2,
+  "privateKey": "private.key",
+  "certificate": "certificate.pem",
+  "certificateChain": "certchain.pem",
+  "method": "jks",
+  "keyStore": "./AppData/keystore.jks",
+  "keyStorePassword": "password"
+}

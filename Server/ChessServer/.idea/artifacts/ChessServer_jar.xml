@@ -1,0 +1,18 @@
+<component name="ArtifactManager">
+  <artifact name="ChessServer:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/ChessServer_jar</output-path>
+    <root id="root">
+      <element id="archive" name="ChessServer.jar">
+        <element id="module-output" name="ChessServer" />
+        <element id="directory" name="AppData">
+          <element id="file-copy" path="$PROJECT_DIR$/AppData/config.json" />
+          <element id="file-copy" path="$PROJECT_DIR$/AppData/keystore.jks" />
+        </element>
+      </element>
+      <element id="library" level="project" name="Maven: org.bouncycastle:bcutil-jdk15on:1.70" />
+      <element id="library" level="project" name="Maven: com.google.code.gson:gson:2.10" />
+      <element id="library" level="project" name="Maven: org.bouncycastle:bcpkix-jdk15on:1.70" />
+      <element id="library" level="project" name="Maven: org.bouncycastle:bcprov-jdk15on:1.70" />
+    </root>
+  </artifact>
+</component>
