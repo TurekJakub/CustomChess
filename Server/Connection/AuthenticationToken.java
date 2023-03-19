@@ -4,6 +4,8 @@ import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
 import org.bson.types.ObjectId;
 
+import java.util.Date;
+
 /*
    Data class representing token used for Authentication of user during email account activation and password reset process
 */
@@ -11,22 +13,22 @@ import org.bson.types.ObjectId;
 public class AuthenticationToken {
     @Id
     private String _id = new ObjectId().toString();
-    private long expiration;
+    private Date expiration;
     private String tokenHash;
 
     public AuthenticationToken(String tokenHash) {
         this.tokenHash = tokenHash;
-        this.expiration = System.currentTimeMillis() + 86400000;
+        this.expiration = new Date(System.currentTimeMillis() + 86400000);
     }
 
     public AuthenticationToken() {
     }
 
-    public long getExpiration() {
+    public Date getExpiration() {
         return expiration;
     }
 
-    public void setExpiration(long expiration) {
+    public void setExpiration(Date expiration) {
         this.expiration = expiration;
     }
 

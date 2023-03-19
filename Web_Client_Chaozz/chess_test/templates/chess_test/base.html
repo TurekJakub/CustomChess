@@ -16,9 +16,10 @@
         <div class="container-fluid d-flex justify-content-center">
            
             <h1 class="selectDisable me-auto">CUSTOM CHESS</h1>
-            {% block nav_content_center%}{% endblock %}    
+            {% block nav_content_center%}{% endblock %}  
+            {% block profile_visibility %}  
             <div class="nav-item dropdown d-none d-sm-block">
-                <button class=" px-0 mx-0 bg-dark  ms-auto rounded border border-secondary navButton {% block profile_visibility %}{%endblock%}"
+                <button class=" px-0 mx-0 bg-dark  ms-auto rounded border border-secondary navButton"
                     data-bs-toggle="dropdown" aria-expanded="false" style="height: 50px;
                     width: auto;">
                     <div class="w-100 d-flex align-items-center">
@@ -48,6 +49,7 @@
                
                 </div>
             </div>     
+            {%endblock%}
             {% block nav_content_end%}{% endblock %}       
             
         </div>
