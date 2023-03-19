@@ -1,8 +1,6 @@
-
 *.svg
 Server/Connection/SSLClient.java
 Server/Connection/TestClient.java
 Server/Connection/test.java
-*.pyc
 *.pyc
 *.jar
