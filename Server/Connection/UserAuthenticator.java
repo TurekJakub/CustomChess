@@ -1,6 +1,7 @@
 package org.connection;
 
 
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 
@@ -55,6 +56,9 @@ public class UserAuthenticator {
         byte[] tokenValue = new byte[size];
         new SecureRandom().nextBytes(tokenValue);
         return new String(Base64.encodeBase64URLSafe(tokenValue));
+    }
+    public String getUrlEncodedId(int id){
+        return new String(Base64.encodeBase64URLSafe(String.valueOf(id).getBytes()));
     }
 
     /*

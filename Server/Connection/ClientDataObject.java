@@ -17,7 +17,7 @@ import java.util.List;
 public class ClientDataObject {
     @Id
     private String _id = new ObjectId().toString();
-    private int id = 25;
+    private int id;
     private String username;
     private String password;
     private String email;
@@ -25,13 +25,14 @@ public class ClientDataObject {
     private Date last_login;
     private List<AuthenticationToken> tokens = new ArrayList<>();
 
-    public ClientDataObject(String username, String password, String email, boolean active, List<AuthenticationToken> tokens) {
+    public ClientDataObject(String username, String password, String email, boolean active, List<AuthenticationToken> tokens,int id) {
         this.username = username;
         this.password = password;
         this.email = email;
         this.is_active = active;
         this.tokens = tokens;
         this.last_login = null;//new Date(0);
+        this.id = id;
     }
 
     public Date getLast_login() {
@@ -88,6 +89,10 @@ public class ClientDataObject {
 
     public String getEmail() {
         return email;
+    }
+
+    public void addToken(AuthenticationToken authenticationToken) {
+        tokens.add(authenticationToken);
     }
 
     public boolean isActive() {
