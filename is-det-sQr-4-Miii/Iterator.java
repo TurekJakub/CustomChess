@@ -1,16 +1,19 @@
-import java.util.Set;
 import java.util.HashSet;
 
 
 public class Iterator {
+    Piece p;
     String s;
+    char c = '*', atc;
+
     int start = 1, end = 1;
     int stepA = 1, stepB = 1;
-    char c = '*';
-    Set<int[]> dirs;
+    
+    boolean leap = false, hop = false;
+    boolean mustCapture = false, mustNotCapture = false;
+    HashSet<int[]> dirs = new HashSet<>();
 
-
-    public HashSet<int[]> asdf(Piece p, char atc, boolean leap){
+    public HashSet<int[]> gimmeSet(){
         for (int i = -1; i <= 1; i++) {
             for (int j = -1; j <= 1; j++) {
                 if(i == 0 && j == 0) continue;
@@ -66,33 +69,29 @@ public class Iterator {
             }
             i++;
         }
-        
-        
-        
-        return null;
+
+        return dirs;
+        //return null;
+
+    
     }
-
-
-    public Iterator(String s, int start, int end, int stepA, int stepB, char c) {
+    public Iterator(Piece p, String s, char c, char atc, MoveInterpreter mi) {
+        this.p = p;
         this.s = s;
-        this.start = start;
-        this.end = end;
-        this.stepA = stepA;
-        this.stepB = stepB;
         this.c = c;
-    }
-
-    public Iterator(String s, int start, int end, char c) {
-        this.s = s;
-        this.start = start;
-        this.end = end;
-        this.stepA = 1;
-        this.stepB = 1;
-        this.c = c;
+        this.atc = atc;
+        this.start = mi.start;
+        this.end = mi.end;
+        this.stepA = mi.stepA;
+        this.stepB = mi.stepB;
+        this.leap = mi.leap;
+        this.hop = mi.hop;
+        this.mustCapture = mi.mustCapture;
+        this.mustNotCapture = mi.mustNotCapture;
     }
 
     private void addarr(int a, int b){
-        int[] t = new int[]{a,b};
+        int[] t = {a,b};
         dirs.add(t);
     }
 }
