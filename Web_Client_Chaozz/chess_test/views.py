@@ -9,10 +9,11 @@ from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from .forms import sign_up_form, sign_in_form
 from django.contrib.auth.models import User
-from django.contrib.auth import login, authenticate
-from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth import login
+from django.contrib.auth.decorators import login_required
 
 
+connection = None
 @csrf_exempt
 def index(request):
     template = loader.get_template('chess_test/index.html')
@@ -28,13 +29,17 @@ def index(request):
 
 
 @csrf_exempt
-def sign_in(request):
-    msg = ''  
+def sign_in(request):     
+    global connection    
+    if(connection == None):
+        connection = Connection()      
+    
     if (request.method == 'POST'):
         form = sign_in_form(request.POST)
 
-        if (form.is_valid()):
-            data = form.cleaned_data      
+        if (form.is_valid()):            
+            data = form.cleaned_data   
+            """   
             user = authenticate(request, username=data['username'],password =data['password'])
             if user is not None:
                 login(request, user)
@@ -42,7 +47,15 @@ def sign_in(request):
             else:
                 msg = 'fuck you'
                 print('fuck you')
-    return render(request, 'chess_test/index.html', context={'msg': msg})
+            """
+            connection.send_data(f"signin:{data['username']}:{data['password']}") 
+            response_status =  connection.recieve_data().split(':')[1].strip()                 
+            if( response_status == 'success'):
+             user = User.objects.create_user(username=data['username'],password= data['password'])
+             login(request, user)
+             return render(request, 'chess_test/index.html', context={'signin':True,'username':data['username']})
+            return render(request, 'chess_test/index.html', context={'msg':'Neplatné přihlasšovací údaje'})
+    return render(request, 'chess_test/index.html')
     
 def sign_inm(request,uid,token):
    return HttpResponse(token)
@@ -70,6 +83,7 @@ def sign_up(request):
     return render(request, 'chess_test/signup.html', context={'msg': ''})
 
 @csrf_exempt
+@login_required
 def game(request):
 
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
