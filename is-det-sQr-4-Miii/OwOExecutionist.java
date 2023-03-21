@@ -1,3 +1,5 @@
+import java.util.Arrays;
+import java.util.HashSet;
 
 public class OwOExecutionist {
     public static void main(String[] args) {
@@ -15,7 +17,15 @@ public class OwOExecutionist {
 
         board.print();
 
-        MoveInterpreter mi = new MoveInterpreter(board);
-        System.out.println(mi.getValidMoves(p1.moves[1], 0, 0, p1).toString());;
+        MoveInterpreter mi = new MoveInterpreter(null);
+        mi.setBoard(board);
+
+        HashSet<int[]> hs = mi.getValidMoves(p1.moves[0], 0, 0, p1);
+        java.util.Iterator<int[]> itr = hs.iterator();
+        while(itr.hasNext()){
+            System.out.print(Arrays.toString(itr.next()));
+        }
+
+
     }
 }
