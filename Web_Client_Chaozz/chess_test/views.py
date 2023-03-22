@@ -12,42 +12,17 @@ from django.contrib.auth.models import User
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 
-
 connection = None
-@csrf_exempt
-def index(request):
-    template = loader.get_template('chess_test/index.html')
-    c = Connection()
-    x = int(c.recieve_data().split(':')[1])
-    c.receive_files(x)
-    if (request.method == "POST"):
-        print(request.POST.get('nickname'))
-
-    return HttpResponse(template.render())
-
-# Create your views here.
-
 
 @csrf_exempt
 def sign_in(request):     
-    global connection    
-    if(connection == None):
-        connection = Connection()      
-    
+    global connection   
+    establish_connectio() 
     if (request.method == 'POST'):
         form = sign_in_form(request.POST)
 
         if (form.is_valid()):            
-            data = form.cleaned_data   
-            """   
-            user = authenticate(request, username=data['username'],password =data['password'])
-            if user is not None:
-                login(request, user)
-                return redirect('game/')
-            else:
-                msg = 'fuck you'
-                print('fuck you')
-            """
+            data = form.cleaned_data              
             connection.send_data(f"signin:{data['username']}:{data['password']}") 
             response_status =  connection.recieve_data().split(':')[1].strip()                 
             if( response_status == 'success'):
@@ -56,31 +31,24 @@ def sign_in(request):
              return render(request, 'chess_test/index.html', context={'signin':True,'username':data['username']})
             return render(request, 'chess_test/index.html', context={'msg':'Neplatné přihlasšovací údaje'})
     return render(request, 'chess_test/index.html')
-    
-def sign_inm(request,uid,token):
-   return HttpResponse(token)
 
 @csrf_exempt
 def sign_up(request):
-   
+    global connection
+    establish_connectio()
     if (request.method == 'POST'):
         form = sign_up_form(request.POST)
         if (form.is_valid()):
+            print(request.headers)
             data = form.cleaned_data
-            if (User.objects.filter(email=data['email'])):
-                    return render(request, 'chess_test/signup.html', context={'msg': 'You already have profile, sing in'})
-            if (User.objects.filter(username=data['username'])):
-                    return render(request, 'chess_test/signup.html', context={'msg': 'This username is already used'})
-            user = User.objects.create_user(
-            username=data['username'], password=data['password'], email=data['email'])
-            user.save()
-                # user = authenticate(request, username=data['username'],password =data['password'])
-            if user is not None:
-                login(request, user)
-                return redirect('game/')
-            else:
-                print('fuck you')
-    return render(request, 'chess_test/signup.html', context={'msg': ''})
+            connection.send_data(f"signup:{data['username']}:{data['password']}:{data['email']}") 
+            response_status =  connection.recieve_data().split(':')[1].strip()                 
+            response_status = ['','success']
+            if response_status[1] == 'success':                
+                return render(request,'chess_test/signupsuccess.html')            
+            return render(request,'chess_test/signup.html',context={'msg':response_status[1]})        
+        return render(request,'chess_test/signup.html',context={'msg':'x'})
+    return render(request, 'chess_test/signup.html')
 
 @csrf_exempt
 @login_required
@@ -107,3 +75,8 @@ def game(request):
     context = {"figures": f, "a": 7, "b": 6}
     print("Změna")
     return render(request, 'chess_test/chessboard.html', context)
+
+def establish_connectio():
+    global connection
+    if(connection == None):
+        connection = Connection()    
