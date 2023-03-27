@@ -2,6 +2,7 @@ package org.connection;
 
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
+import dev.morphia.annotations.Reference;
 import org.bson.types.ObjectId;
 
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ import java.util.List;
 public class ClientDataObject {
     @Id
     private String _id = new ObjectId().toString();
+    public ObjectId test = new ObjectId("641f8497d0d9127eca673a2b");
     private int id;
     private String username;
     private String password;

@@ -1,9 +1,9 @@
 package org.connection;
 
 
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
+import java.util.InputMismatchException;
 
 import org.apache.commons.codec.binary.Base64;
 import org.bouncycastle.crypto.digests.SHA256Digest;
@@ -55,9 +55,10 @@ public class UserAuthenticator {
     public String getAuthenticationTokenString(int size) {
         byte[] tokenValue = new byte[size];
         new SecureRandom().nextBytes(tokenValue);
-        return new String(Base64.encodeBase64URLSafe(tokenValue));
+        return new String(Base64.encodeBase64(tokenValue));
     }
-    public String getUrlEncodedId(int id){
+
+    public String getUrlEncodedId(int id) {
         return new String(Base64.encodeBase64URLSafe(String.valueOf(id).getBytes()));
     }
 
@@ -68,5 +69,6 @@ public class UserAuthenticator {
         String tokenValueHash = getPasswordHash(tokenValueString, "", numberOfIterations);
         return new AuthenticationToken(tokenValueHash);
     }
+
 
 }

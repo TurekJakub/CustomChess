@@ -1,5 +1,8 @@
 package org.connection;
 
+import dev.morphia.annotations.Reference;
+import org.bson.types.ObjectId;
+
 import java.net.Socket;
 
 public class Client {
@@ -7,7 +10,6 @@ public class Client {
     private boolean isReconnecting;
     private boolean isInGame;
     private String gameStamp;
-
     public void setName(String name) {
         this.name = name;
     }

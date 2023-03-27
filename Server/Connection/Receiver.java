@@ -20,9 +20,9 @@ public class Receiver {
     }
     public static File readFile(Socket socket) throws IOException{
         int i;
-        String[] fileData = readData(socket).split(":");
+        String[] fileData = readBytes(socket).split(":");
         int length = Integer.valueOf(fileData[1]);
-        File file = new File("t"+fileData[0]);
+        File file = new File("./appdata/"+fileData[0]);
         FileOutputStream fileOutputStream = new FileOutputStream(file);
         byte[] buffer = new byte[8<<10];
         while (length>0 &&(i = socket.getInputStream().read(buffer,0,Math.min(length,buffer.length))) != -1) {

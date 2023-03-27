@@ -1,26 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
 {%extends "./index.html"%}
+{%block head%}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.css"
+    integrity="sha512-C4k/QrN4udgZnXStNFS5osxdhVECWyhMsK1pnlk+LkC7yJGCqoYxW4mH3/ZXLweODyzolwdWSqmmadudSHMRLA=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"
+    integrity="sha512-6lplKUSl86rUVprDIjiW8DuOniNX8UDoRATqZSds/7t6zCQZfaCe3e5zcGaQwxa8Kpn5RTM9Fvl3X2lLV4grPQ=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+{%endblock%}
+
 <body>
-    {%block form%}  
+    {%block form%}
     <h2 class=" mt-2">Zaregistrovat se</h2>
-        <div class="form-group mt-2">
-            <label for="id_username">Uživatelské jmeno</label>
-            <input class="form-control" id="id_username" name="username">
-        </div>               
-        <div class="form-group mt-2">
-            <label for="id_password">Heslo</label>
-            <input type="password" class="form-control" id="id_password"  name="password">
-        </div>
-        <div class="form-group">
-            <label for="id_email">Email</label>
-            <input class="form-control" id="id_email" name="email">
-        </div>
-        <button class="form-control mb-3 mt-2 bg-success border-success text-white" type="submit"
-            class="btn btn-primary">Registrovat</button>
-    
+    <div class="form-group mt-2">
+        <label for="id_username">Uživatelské jmeno</label>
+        <input class="form-control" id="id_username" name="username">
+    </div>
+    <div class="form-group mt-2">
+        <label for="id_password">Heslo</label>
+        <input type="password" class="form-control" id="id_password" name="password">
+    </div>
+    <div class="form-group">
+        <label for="id_email">Email</label>
+        <input class="form-control" id="id_email" name="email">
+    </div>
+    <div class="form-group">
+        <label for="id_image">Profilový obrázek</label>
+        <input type="file" class="form-control" id="id_image" name="image">
+    </div>
+    <div id="test" class="h-25">
+        <img id="testi" src="{{obj}}" class="h-25">
+    </div>
+    <button id="button" class="form-control mb-3 mt-2 bg-success border-success text-white" type="submit"
+        class="btn btn-primary">Registrovat</button>
+  
+  <script>
+       
+        const imageIn = document.getElementById('id_image');
+
+
+        imageIn.addEventListener('change', () => {
+            url = URL.createObjectURL(imageIn.files[0])
+            document.getElementById('testi').setAttribute('src', url)
+            image = document.getElementById('testi')
+            const cropper = new Cropper(image, {
+                aspectRatio: 1 / 1,
+                crop(event) {
+                    console.log(event.detail.x);
+                    console.log(event.detail.y);
+                    console.log(event.detail.width);
+                    console.log(event.detail.height);
+                    console.log(event.detail.rotate);
+                    console.log(event.detail.scaleX);
+                    console.log(event.detail.scaleY);
+                  
+
+                  
+                 
+                },
+
+            });
+            
+            cropper.classList.add("h-25")
+            cropper.setAttribute('style','')
+
+        })
+        
+
+    </script>
     {%endblock%}
+
     {% block profile_visibility%}{%endblock%}
-    
+
 </body>
+
+
 </html>
