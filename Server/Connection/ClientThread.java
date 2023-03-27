@@ -2,18 +2,27 @@ package org.connection;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
+import com.mongodb.client.gridfs.GridFSBucket;
+import com.mongodb.client.gridfs.GridFSBuckets;
+import com.mongodb.client.gridfs.model.GridFSDownloadOptions;
+import com.mongodb.client.gridfs.model.GridFSFile;
+import com.mongodb.client.gridfs.model.GridFSUploadOptions;
+import com.mongodb.client.model.Filters;
 import dev.morphia.Datastore;
 import dev.morphia.Morphia;
 import dev.morphia.query.FindOptions;
 import dev.morphia.query.Sort;
+import org.bson.Document;
+import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.InputMismatchException;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static dev.morphia.query.filters.Filters.eq;
 import static dev.morphia.query.filters.Filters.or;
@@ -62,12 +71,38 @@ public class ClientThread extends Thread {
         emailSender = new EmailSender();
     }
 
+    public ObjectId test() throws IOException {
+
+        GridFSBucket gridFSBucket = GridFSBuckets.create(dbConnection.getDatabase());
+
+        InputStream streamToUploadFrom = new FileInputStream("./appdata/bocchi.jpg");
+        GridFSUploadOptions options = new GridFSUploadOptions()
+                .chunkSizeBytes(1048576)
+                .metadata(new Document("type", "image"));
+        ObjectId fileId = gridFSBucket.uploadFromStream("bocchi.jpg", streamToUploadFrom, options);
+       /*
+        GridFSDownloadOptions downloadOptions = new GridFSDownloadOptions().revision(0);
+        FileOutputStream streamToDownloadTo = new FileOutputStream("./appdata/bocchi_images_retrived.jpg");
+        Bson query = Filters.eq("filename","bocchi");
+        gridFSBucket.find().filter(query).forEach(gridFSFile -> System.out.println(gridFSFile.getLength()));
+      //  Sender.send();
+        gridFSBucket.downloadToStream(i, streamToDownloadTo);
+
+        streamToDownloadTo.flush();
+
+        */
+        return fileId;
+
+
+    }
+
     private Datastore establishDbConnection(String dbName, String packageName, String connectionString) {
         MongoClient mongoClient = MongoClients.create(connectionString);
         final Datastore datastore = Morphia.createDatastore(mongoClient, dbName);
         datastore.getMapper().mapPackage(packageName);
         return datastore;
     }
+
     /*
          Start handling clients requests until is properly authenticated, or authentication throttling end the session
          Accepted request format is "request type:username:password:email" - all parameters except request type
@@ -81,57 +116,62 @@ public class ClientThread extends Thread {
         String password;
         String email;
         while (!authenticated) {
-            //  String[] authenticationString = Receiver.readBytes(connection).split(":"); // production
-            String[] authenticationString = "reset:OwO_UwU:123Hesl0:jakub.turek@student.gyarab.cz".split(":"); // test
+            System.out.println("start");
+            String[] authenticationString = Receiver.readBytes(connection).split(":"); // production
+            System.out.println(authenticationString);
+            //String[] authenticationString = "reset:OwO_UwU:123Hesl0:jakub.turek@student.gyarab.cz".split(":"); // test
             switch (authenticationString[0]) {
                 case "signup": // sign up request handling
-                     username = authenticationString[1];
-                     password = authenticationString[2];
-                     email = authenticationString[3];
+                    username = authenticationString[1];
+                    password = authenticationString[2];
+                    email = authenticationString[3];
                     // checking the validity of the username
                     if (dbConnection.find(ClientDataObject.class).filter(or(eq("username", username), eq("email", username))).count() != 0) {
-                       // Sender.send(connection, "err:username invalid");
+                        Sender.send(connection, "err:username invalid");
                         break;
                     }
                     // checking if user does not have account already
                     if (dbConnection.find(ClientDataObject.class).filter(eq("email", email)).count() != 0) {
-                      //  Sender.send(connection, "err:account exist");
+                        Sender.send(connection, "err:account exist");
+                        System.out.println("again");
                         break;
                     }
                     // creating new user entry in database
-                    int id = dbConnection.find(ClientDataObject.class).iterator(new FindOptions().projection().include("id").sort(Sort.descending("id")).limit(1)).toList().get(0).getId() +1;
+                    int id = dbConnection.find(ClientDataObject.class).iterator(new FindOptions().projection().include("id").sort(Sort.descending("id")).limit(1)).toList().get(0).getId() + 1;
                     String hashedPasswordString = userAuthenticator.getHashedPasswordString(password, 390000);
-                    clientData= new ClientDataObject(username, hashedPasswordString, email, false, new ArrayList<>(),id);
+                    clientData = new ClientDataObject(username, hashedPasswordString, email, false, new ArrayList<>(), id);
                     String tokenValueString = userAuthenticator.getAuthenticationTokenString(32);
-                    clientData.addToken(userAuthenticator.getAuthenticationToken(tokenValueString,3000));
+                    clientData.addToken(userAuthenticator.getAuthenticationToken(tokenValueString, 3000));
                     dbConnection.save(clientData);
-                    emailSender.sendConfirmationEmail(email,userAuthenticator.getUrlEncodedId(id)+"/"+tokenValueString);
+                    emailSender.sendConfirmationEmail(email, userAuthenticator.getUrlEncodedId(id) + "/" + tokenValueString);
+                    Sender.send(connection, "msg:success");
                     break;
                 case "signin": // sign in request handling
                     username = authenticationString[1];
                     password = authenticationString[2];
                     // extracting user entry from database
-                    try{
-                      clientData = dbConnection.find(ClientDataObject.class).filter(or(eq("username", username), eq("email", username))).iterator().toList().get(0);
-                    }catch (IndexOutOfBoundsException ex){
-                       // Sender.send(connection,"err:authentication error");
+                    try {
+                        clientData = dbConnection.find(ClientDataObject.class).filter(or(eq("username", username), eq("email", username))).iterator().toList().get(0);
+                    } catch (IndexOutOfBoundsException ex) {
+                        // Sender.send(connection,"err:authentication error");
                         break;
                     }
-                    if(!clientData.isActive()){
-                       // Sender.send(connection,"err:account inactive");
+                    if (!clientData.isActive()) {
+                        // Sender.send(connection,"err:account inactive");
                         break;
                     }
                     // getting passwords hashes to compare
                     String[] clientPasswordString = clientData.getPassword().split("\\$");
-                    String authenticationPasswordHash = userAuthenticator.getPasswordHash(password,clientPasswordString[2],Integer.parseInt(clientPasswordString[1]));
+                    String authenticationPasswordHash = userAuthenticator.getPasswordHash(password, clientPasswordString[2], Integer.parseInt(clientPasswordString[1]));
                     String clientPasswordHash = clientPasswordString[3];
-                    if(clientPasswordHash.equals(authenticationPasswordHash)){
+                    if (clientPasswordHash.equals(authenticationPasswordHash)) {
                         // signing user in
                         // TODO create Client instance
                         authenticated = true;
                         clientData.setLast_login(new Date(System.currentTimeMillis()));
                         dbConnection.save(clientData);
-                        //  Sender.send(connection,"msg:success");
+                        System.out.println("success");
+                        Sender.send(connection, "msg:success");
                         break;
                     }
                     // sign in failed
@@ -141,21 +181,22 @@ public class ClientThread extends Thread {
                     break;
                 case "reset": // password reset request handling
                     username = authenticationString[1];
-                    try{
+                    try {
                         clientData = dbConnection.find(ClientDataObject.class).filter(or(eq("username", username), eq("email", username))).iterator().toList().get(0);
-                    }catch (IndexOutOfBoundsException ex){
+                    } catch (IndexOutOfBoundsException ex) {
                         // Sender.send(connection,"err:authentication error");
                         break;
                     }
-                    if(!clientData.isActive()){
+                    if (!clientData.isActive()) {
                         // Sender.send(connection,"err:account inactive");
                         break;
                     }
-                    tokenValueString =userAuthenticator.getAuthenticationTokenString(32);
-                    clientData.addToken(userAuthenticator.getAuthenticationToken(tokenValueString,3000));
+                    tokenValueString = userAuthenticator.getAuthenticationTokenString(32);
+                    clientData.addToken(userAuthenticator.getAuthenticationToken(tokenValueString, 3000));
                     dbConnection.save(clientData);
-                    emailSender.sendResetPasswordEmail(clientData.getEmail(),userAuthenticator.getUrlEncodedId(clientData.getId())+"/"+tokenValueString);
+                    emailSender.sendResetPasswordEmail(clientData.getEmail(), userAuthenticator.getUrlEncodedId(clientData.getId()) + "/" + tokenValueString);
                     authenticated = true; //debug
+
                     break;
 
             }
@@ -164,12 +205,43 @@ public class ClientThread extends Thread {
     }
 
     public static void main(String[] args) throws IOException {
+
         ClientThread c = new ClientThread();
-        c.authenticatedUser();
+        GridFSBucket gridFSBucket = GridFSBuckets.create(c.dbConnection.getDatabase());
+        InputStream streamToUploadFrom = new FileInputStream("./appdata/images.jpg");
+        GridFSUploadOptions options = new GridFSUploadOptions()
+                .chunkSizeBytes(1048576)
+                .metadata(new Document("type", ".jpg"));
+        ObjectId fileId = gridFSBucket.uploadFromStream("bocchi", streamToUploadFrom, options);
+        ClientDataObject cc = new ClientDataObject("nfksdjf", "adklkda", "dksldlk", true, new ArrayList<>(), 35);
+        cc.test = fileId;
+        c.dbConnection.save(cc);
+        ClientDataObject cx = c.dbConnection.find(ClientDataObject.class).filter(or(eq("username", "nfksdjf"))).iterator().toList().get(0);
+      //  c.test(cx.test);
     }
 
     @Override
     public void run() {
+
+        System.out.println("start");
+
+        try {
+            ObjectId i = test();
+            GridFSBucket gridFSBucket = GridFSBuckets.create(dbConnection.getDatabase());
+            Bson query = Filters.eq("filename","bocchi.jpg");
+            GridFSFile file= gridFSBucket.find().filter(query).first();
+
+            Sender.send(connection,file.getFilename()+":"+file.getLength());
+            gridFSBucket.downloadToStream(i, connection.getOutputStream());
+
+            connection.getOutputStream().flush();
+            System.out.println(Receiver.readBytes(connection));
+            Receiver.readFile(connection);
+            Sender.send(connection, "ssg:success");
+            System.out.println("downloaded");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         if (client == null) {
             try {
                 authenticatedUser();

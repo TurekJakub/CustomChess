@@ -114,7 +114,8 @@ public class Server extends Thread {
 
     // start ClientThread for previously authenticated client
     public synchronized void startClientThread(Client client) {
-        ClientThread clientThread = new ClientThread(gamesManager, this, client, timeout);
+        //ClientThread clientThread = new ClientThread(gamesManager, this, client, timeout);
+        ClientThread clientThread = new ClientThread(gamesManager,this,client.getClientSocket(),timeout);
         clientThread.start();
         clientsThreads.add(clientThread);
 

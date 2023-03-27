@@ -49,12 +49,18 @@ class Connection:
                 file_bytes = []
                 size = size - 4096
 
+    def send_file(self,file):
+        print(file.size)
+        self.send_data(file.name + ':'+ str(file.size))
+        for chunk in file.chunks():
+            self.connection.sendall(chunk)        
+
     def recieve_data(self):
         return self.connection.recv().decode('utf-8')
 
     def send_data(self, data):
-        self.connection.send(len(data).to_bytes(4, 'big'))
-        self.connection.send(data.encode())
+        self.connection.sendall(len(data).to_bytes(4, 'big'))
+        self.connection.sendall(data.encode())
 
     def start_waiting_until_next_turn(self):
         t = threading.Thread(target=self.wait_until_next_turn())

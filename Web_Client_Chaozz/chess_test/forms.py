@@ -5,6 +5,9 @@ class sign_in_form(forms.Form):
    
 class sign_up_form(sign_in_form):   
     email = forms.EmailField(required=True)
+    image = forms.FileField(required=False)
+
+   
    
 
  
