@@ -24,7 +24,7 @@
                     width: auto;">
                     <div class="w-100 d-flex align-items-center">
                         <img class=" rounded me-2 mt-1 ms-1 mb-1 d-flex align-items-center selectDisable border border-success"
-                           {%if signin %} src="{% static 'temp' %}/pawn.svg"{%else%} src="{% static 'chess_test' %}/bocchi.jpg" {% endif%}alt="" style="height: 40px; width: 40px;">
+                           {%if signin %} src="{% static 'temp' %}{{profile_picture}}"{%else%} src="{% static 'chess_test' %}/bocchi.jpg" {% endif%}alt="" style="height: 40px; width: 40px;">
                         <div class=" d-flex align-items-center ms-auto me-2 selectDisable text-white">{% if signin %}{{username}}{%else%}Bocchi the Rock!{% endif %}</div>
                     </div>
                 </button>

@@ -23,12 +23,13 @@ def sign_in(request):
 
         if (form.is_valid()):            
             data = form.cleaned_data              
-            connection.send_data(f"signin:{data['username']}:{data['password']}") 
-            response_status =  connection.recieve_data().split(':')[1].strip()                 
+            connection.send_data(f"signin:{data['username']}:{data['password']}")             
+            file_name = connection.recieve_file()           
+            response_status =  connection.recieve_data().split(':')[1].strip()  
             if( response_status == 'success'):
              user = User.objects.create_user(username=data['username'],password= data['password'])
              login(request, user)
-             return render(request, 'chess_test/index.html', context={'signin':True,'username':data['username']})
+             return render(request, 'chess_test/index.html', context={'signin':True,'username':data['username'],'profile_picture':f"/{file_name}"})
             return render(request, 'chess_test/index.html', context={'msg':'Neplatné přihlasšovací údaje'})
     return render(request, 'chess_test/index.html')
 
@@ -36,28 +37,22 @@ def sign_in(request):
 def sign_up(request):
     global connection
     establish_connectio()
-    y = connection.recieve_data().split(":")    
-    connection.recieve_file(y[0],int(y[1]))
+   
 
     if (request.method == 'POST'):
-        form = sign_up_form(request.POST,request.FILES)
-        
+        form = sign_up_form(request.POST,request.FILES)        
         print(form)
-        if (form.is_valid()):
-            print(request.headers)
-            data = form.cleaned_data
-           # x = handle_uploaded_file(data['image'])
-          
-            #return render(request,'chess_test/signup.html',context={'obj':'static/temp/bocchi.jpg'}) 
+        if (form.is_valid()):           
+            data = form.cleaned_data       
             connection.send_data(f"signup:{data['username']}:{data['password']}:{data['email']}")
-            connection.send_file(data['image']) 
-            response_status =  connection.recieve_data().split(':')[1].strip()                 
-            response_status = ['','success']
+           # connection.send_file(data['image']) 
+            response_status =  connection.recieve_data().split(':')[1].strip()           
             if response_status[1] == 'success':                
                 return render(request,'chess_test/signupsuccess.html')            
-            return render(request,'chess_test/signup.html',context={'msg':response_status[1]})        
-        return render(request,'chess_test/signup.html',context={'msg':'x'})
-    return render(request,'chess_test/signup.html',context={'obj':static('/temp/bocchi.jpg')}) 
+            return render(request,'chess_test/signup.html',context={'msg':response_status[1]}) 
+        form = sign_in_form()       
+        return render(request,'chess_test/signup.html')
+    return render(request,'chess_test/signup.html') 
 
 @csrf_exempt
 @login_required
@@ -89,10 +84,5 @@ def establish_connectio():
     global connection
     if(connection == None):
         connection = Connection()    
-def handle_uploaded_file(f):
-    x = f'./chess_test/static/temp/{f.name}'
-    print(x)
-    with open(x, 'wb+') as destination:
-        for chunk in f.chunks():
-            destination.write(chunk)
-    return x
+
+   
