@@ -1,5 +1,13 @@
 package org.connection;
 
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.gridfs.GridFSBucket;
+import com.mongodb.client.gridfs.GridFSBuckets;
+import com.mongodb.client.gridfs.model.GridFSFile;
+import com.mongodb.client.model.Filters;
+import org.bson.conversions.Bson;
+import org.bson.types.ObjectId;
+
 import java.io.*;
 import java.net.Socket;
 import java.util.List;
@@ -14,6 +22,15 @@ public class Sender {
             throw new IOException();
         }
 
+    }
+    // Try to find file of given id in given MongoDatabase and if find it send it over the given Socket
+    public static void sendFileFromDatabase(MongoDatabase sourceDatabase, ObjectId fileId , Socket receiver) throws IOException {
+        GridFSBucket gridFSBucket = GridFSBuckets.create(sourceDatabase);
+        Bson query = Filters.eq("_id",fileId);
+        GridFSFile file= gridFSBucket.find().filter(query).first();
+        Sender.send(receiver,file.getFilename() +":"+file.getLength());
+        gridFSBucket.downloadToStream(fileId, receiver.getOutputStream());
+        receiver.getOutputStream().flush();
     }
 
     public static void sendFile(Socket receiver, File file) throws IOException {

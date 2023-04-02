@@ -1,5 +1,12 @@
 package org.connection;
 
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.gridfs.GridFSBucket;
+import com.mongodb.client.gridfs.GridFSBuckets;
+import com.mongodb.client.gridfs.model.GridFSUploadOptions;
+import org.bson.Document;
+import org.bson.types.ObjectId;
+
 import java.io.*;
 import java.net.Socket;
 import java.nio.ByteBuffer;
@@ -31,5 +38,15 @@ public class Receiver {
         }
 
         return file;
+    }
+    // receive file and save it to given database
+    public static ObjectId readAndSaveFileToDatabase(MongoDatabase targetDatabase, Socket source) throws IOException {
+        String[] fileData = readBytes(source).split(":");
+        GridFSBucket gridFSBucket = GridFSBuckets.create(targetDatabase);
+        GridFSUploadOptions options = new GridFSUploadOptions()
+                .chunkSizeBytes(1048576)
+                .metadata(new Document("type", fileData[1]));
+        return gridFSBucket.uploadFromStream(fileData[0], source.getInputStream(), options);
+
     }
 }

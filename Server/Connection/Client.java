@@ -10,11 +10,12 @@ public class Client {
     private boolean isReconnecting;
     private boolean isInGame;
     private String gameStamp;
+    private  String name;
     public void setName(String name) {
         this.name = name;
     }
 
-    private  String name;
+
 
     public Client(Socket clientSocket, String name) {
         this.clientSocket = clientSocket;

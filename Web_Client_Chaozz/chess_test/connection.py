@@ -35,19 +35,20 @@ class Connection:
 
     def receive_files(self, number_of_files):
         while number_of_files > 0:
-            message = self.connection.recv().decode('utf-8')
-            file_info = message.split(':')
-            self.recieve_file(file_info[0], int(file_info[1]))
+            self.recieve_file()         
             print('Successfully transferred')
             number_of_files = number_of_files - 1
 
-    def recieve_file(self, name, size):
-        with open('./chess_test/static/temp/' + name, 'wb') as file:
+    def recieve_file(self):
+        file_info = self.connection.recv().decode('utf-8').split(':')
+        size = int(file_info[1].strip())
+        with open('./chess_test/static/temp/' + file_info[0], 'wb') as file:
             while 0 < size:
                 file_bytes = self.connection.recv(4096)
                 file.write(file_bytes)
                 file_bytes = []
                 size = size - 4096
+            return file_info[0]
 
     def send_file(self,file):
         print(file.size)

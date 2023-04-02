@@ -17,17 +17,34 @@ import java.util.List;
 @Entity("auth_user")
 public class ClientDataObject {
     @Id
-    private String _id = new ObjectId().toString();
-    public ObjectId test = new ObjectId("641f8497d0d9127eca673a2b");
+    ObjectId _id;
     private int id;
     private String username;
     private String password;
     private String email;
     private boolean is_active;
     private Date last_login;
+    private String gameStamp;
     private List<AuthenticationToken> tokens = new ArrayList<>();
+    private ObjectId profilePicture;
 
-    public ClientDataObject(String username, String password, String email, boolean active, List<AuthenticationToken> tokens,int id) {
+    public String getGameStamp() {
+        return gameStamp;
+    }
+
+    public void setGameStamp(String gameStamp) {
+        this.gameStamp = gameStamp;
+    }
+
+    public ObjectId getProfilePicture() {
+        return profilePicture;
+    }
+
+    public void setProfilePicture(ObjectId profilePicture) {
+        this.profilePicture = profilePicture;
+    }
+
+    public ClientDataObject(ObjectId profilePicture, String gameStamp, String username, String password, String email, boolean active, List<AuthenticationToken> tokens, int id) {
         this.username = username;
         this.password = password;
         this.email = email;
@@ -35,6 +52,8 @@ public class ClientDataObject {
         this.tokens = tokens;
         this.last_login = null;//new Date(0);
         this.id = id;
+        this.gameStamp = gameStamp;
+        this.profilePicture = new ObjectId("641f8497d0d9127eca673a2b");
     }
 
     public Date getLast_login() {

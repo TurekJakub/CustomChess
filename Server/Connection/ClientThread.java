@@ -18,10 +18,7 @@ import org.bson.types.ObjectId;
 
 import java.io.*;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.InputMismatchException;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 
 import static dev.morphia.query.filters.Filters.eq;
@@ -71,30 +68,7 @@ public class ClientThread extends Thread {
         emailSender = new EmailSender();
     }
 
-    public ObjectId test() throws IOException {
 
-        GridFSBucket gridFSBucket = GridFSBuckets.create(dbConnection.getDatabase());
-
-        InputStream streamToUploadFrom = new FileInputStream("./appdata/bocchi.jpg");
-        GridFSUploadOptions options = new GridFSUploadOptions()
-                .chunkSizeBytes(1048576)
-                .metadata(new Document("type", "image"));
-        ObjectId fileId = gridFSBucket.uploadFromStream("bocchi.jpg", streamToUploadFrom, options);
-       /*
-        GridFSDownloadOptions downloadOptions = new GridFSDownloadOptions().revision(0);
-        FileOutputStream streamToDownloadTo = new FileOutputStream("./appdata/bocchi_images_retrived.jpg");
-        Bson query = Filters.eq("filename","bocchi");
-        gridFSBucket.find().filter(query).forEach(gridFSFile -> System.out.println(gridFSFile.getLength()));
-      //  Sender.send();
-        gridFSBucket.downloadToStream(i, streamToDownloadTo);
-
-        streamToDownloadTo.flush();
-
-        */
-        return fileId;
-
-
-    }
 
     private Datastore establishDbConnection(String dbName, String packageName, String connectionString) {
         MongoClient mongoClient = MongoClients.create(connectionString);
@@ -118,7 +92,6 @@ public class ClientThread extends Thread {
         while (!authenticated) {
             System.out.println("start");
             String[] authenticationString = Receiver.readBytes(connection).split(":"); // production
-            System.out.println(authenticationString);
             //String[] authenticationString = "reset:OwO_UwU:123Hesl0:jakub.turek@student.gyarab.cz".split(":"); // test
             switch (authenticationString[0]) {
                 case "signup": // sign up request handling
@@ -137,9 +110,11 @@ public class ClientThread extends Thread {
                         break;
                     }
                     // creating new user entry in database
-                    int id = dbConnection.find(ClientDataObject.class).iterator(new FindOptions().projection().include("id").sort(Sort.descending("id")).limit(1)).toList().get(0).getId() + 1;
+                    int id =1;
+                  // int id = dbConnection.find(ClientDataObject.class).iterator(new FindOptions().projection().include("id").sort(Sort.descending("id")).limit(1)).toList().get(0).getId() + 1;
                     String hashedPasswordString = userAuthenticator.getHashedPasswordString(password, 390000);
-                    clientData = new ClientDataObject(username, hashedPasswordString, email, false, new ArrayList<>(), id);
+                  //  ObjectId profilePicture = Receiver.readAndSaveFileToDatabase(dbConnection.getDatabase(),connection);
+                    clientData = new ClientDataObject(new ObjectId("641f8497d0d9127eca673a2b"),null,username, hashedPasswordString, email, false, new ArrayList<>(), id);
                     String tokenValueString = userAuthenticator.getAuthenticationTokenString(32);
                     clientData.addToken(userAuthenticator.getAuthenticationToken(tokenValueString, 3000));
                     dbConnection.save(clientData);
@@ -169,6 +144,7 @@ public class ClientThread extends Thread {
                         // TODO create Client instance
                         authenticated = true;
                         clientData.setLast_login(new Date(System.currentTimeMillis()));
+                        Sender.sendFileFromDatabase(dbConnection.getDatabase(),clientData.getProfilePicture(),connection);
                         dbConnection.save(clientData);
                         System.out.println("success");
                         Sender.send(connection, "msg:success");
@@ -204,44 +180,13 @@ public class ClientThread extends Thread {
 
     }
 
-    public static void main(String[] args) throws IOException {
 
-        ClientThread c = new ClientThread();
-        GridFSBucket gridFSBucket = GridFSBuckets.create(c.dbConnection.getDatabase());
-        InputStream streamToUploadFrom = new FileInputStream("./appdata/images.jpg");
-        GridFSUploadOptions options = new GridFSUploadOptions()
-                .chunkSizeBytes(1048576)
-                .metadata(new Document("type", ".jpg"));
-        ObjectId fileId = gridFSBucket.uploadFromStream("bocchi", streamToUploadFrom, options);
-        ClientDataObject cc = new ClientDataObject("nfksdjf", "adklkda", "dksldlk", true, new ArrayList<>(), 35);
-        cc.test = fileId;
-        c.dbConnection.save(cc);
-        ClientDataObject cx = c.dbConnection.find(ClientDataObject.class).filter(or(eq("username", "nfksdjf"))).iterator().toList().get(0);
-      //  c.test(cx.test);
-    }
 
     @Override
     public void run() {
 
-        System.out.println("start");
 
-        try {
-            ObjectId i = test();
-            GridFSBucket gridFSBucket = GridFSBuckets.create(dbConnection.getDatabase());
-            Bson query = Filters.eq("filename","bocchi.jpg");
-            GridFSFile file= gridFSBucket.find().filter(query).first();
 
-            Sender.send(connection,file.getFilename()+":"+file.getLength());
-            gridFSBucket.downloadToStream(i, connection.getOutputStream());
-
-            connection.getOutputStream().flush();
-            System.out.println(Receiver.readBytes(connection));
-            Receiver.readFile(connection);
-            Sender.send(connection, "ssg:success");
-            System.out.println("downloaded");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
         if (client == null) {
             try {
                 authenticatedUser();
@@ -276,9 +221,9 @@ public class ClientThread extends Thread {
         String[] splitInput = input.split(":");
         switch (splitInput[0]) {
             case "crtg":
-                System.out.println("UwU");
-                List<File> gameFiles = recievGameFiles(connection);
-                List<File> gameResources = recievGameFiles(connection);
+
+                List<File> gameFiles = receiveGameFiles(connection);
+                List<File> gameResources = receiveGameFiles(connection);
                 gamesManager.creatGame(splitInput[1], Integer.parseInt(splitInput[2]), gameFiles, gameResources, timeout);
                 gamesManager.joinGame(splitInput[1], client);
                 return false;
@@ -299,7 +244,7 @@ public class ClientThread extends Thread {
 
     }
 
-    public List<File> recievGameFiles(Socket creatorsSocket) throws IOException {
+    public List<File> receiveGameFiles(Socket creatorsSocket) throws IOException {
         List<File> files = new ArrayList<>();
         int numberOfFiles;
         numberOfFiles = Integer.parseInt(Receiver.readData(creatorsSocket));

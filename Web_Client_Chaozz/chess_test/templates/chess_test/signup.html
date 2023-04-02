@@ -31,11 +31,14 @@
         <label for="id_image">Profilový obrázek</label>
         <input type="file" class="form-control" id="id_image" name="image">
     </div>
-    <div id="test" class="h-25">
-        <img id="testi" src="{{obj}}" class="h-25">
+    <div id="test" class="form-group mt-2">
+        <img id="testi" class="w-100 h-25" >
     </div>
-    <button id="button" class="form-control mb-3 mt-2 bg-success border-success text-white" type="submit"
+    <div class="form-group">
+        <button id="button" class="form-control mb-3 mt-2 bg-success border-success text-white" type="submit"
         class="btn btn-primary">Registrovat</button>
+    </div>
+ 
   
   <script>
        
@@ -64,8 +67,7 @@
 
             });
             
-            cropper.classList.add("h-25")
-            cropper.setAttribute('style','')
+            
 
         })
         
