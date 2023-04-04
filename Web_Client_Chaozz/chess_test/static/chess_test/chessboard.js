@@ -74,12 +74,12 @@ function getNewSquerSize() {
   
   if (window.innerWidth > 576) {
     // if(window.innerWidth>window.innerHeight){
-    a = (document.body.clientWidth - document.body.clientWidth / 2) / width
+    a = (document.body.clientWidth - document.body.clientWidth / 3) / width
    
   }
   else {
 
-    a = Math.min((document.body.clientHeight - document.body.clientHeight / 2) / height, document.body.clientWidth / width)
+    a = Math.min((document.body.clientHeight - document.body.clientHeight / 3) / height, document.body.clientWidth / width)
     xy = document.getElementById("chessboard")
     xy.setAttribute("style", "height:" + a*height + "px")
   

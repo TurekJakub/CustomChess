@@ -6,9 +6,24 @@ import org.bson.types.ObjectId;
 import java.net.Socket;
 
 public class Client {
+
     private Socket clientSocket;
     private boolean isReconnecting;
     private boolean isInGame;
+    private boolean authenticated;
+
+    public boolean isReconnecting() {
+        return isReconnecting;
+    }
+
+    public boolean isAuthenticated() {
+        return authenticated;
+    }
+
+    public void setAuthenticated(boolean authenticated) {
+        this.authenticated = authenticated;
+    }
+
     private String gameStamp;
     private  String name;
     public void setName(String name) {
@@ -16,11 +31,12 @@ public class Client {
     }
 
 
-
-    public Client(Socket clientSocket, String name) {
+    public  Client(Socket clientSocket) {
         this.clientSocket = clientSocket;
         isReconnecting = false;
-        this.name = name;
+        isInGame = false;
+        authenticated = false;
+        gameStamp = null;
     }
 
     public String getName() {

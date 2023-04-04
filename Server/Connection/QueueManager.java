@@ -1,11 +1,13 @@
 package org.connection;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class QueueManager extends Thread {
 
     private final List<Client> queue;
+
     Server server;
 
     public QueueManager(Server server) {
@@ -17,15 +19,21 @@ public class QueueManager extends Thread {
     public void run() {
         while (true) {
             for (Client client : queue) {
-               checkClientsConnection(client);
+                checkClientsConnection(client);
             }
 
 
         }
     }
-    private void checkClientsConnection(Client client){
+
+    private void checkClientsConnection(Client client) {
         try {
-            Receiver.readData(client.getClientSocket());
+            String x = Receiver.readData(client.getClientSocket());
+            if (client.getGameStamp().equals(null)) {
+                client.setGameStamp(x);
+                if (server.reconnect(x, client.getClientSocket()))
+                    server.removeClosedQueueConnection(client);
+            }
         } catch (IOException e) {
             server.removeClosedQueueConnection(client);
         }
