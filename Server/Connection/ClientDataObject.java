@@ -24,17 +24,12 @@ public class ClientDataObject {
     private String email;
     private boolean is_active;
     private Date last_login;
-    private String gameStamp;
-    private List<AuthenticationToken> tokens = new ArrayList<>();
+
+    private List<AuthenticationToken> tokens;
+    private List<ObjectId> games;
     private ObjectId profilePicture;
 
-    public String getGameStamp() {
-        return gameStamp;
-    }
 
-    public void setGameStamp(String gameStamp) {
-        this.gameStamp = gameStamp;
-    }
 
     public ObjectId getProfilePicture() {
         return profilePicture;
@@ -44,7 +39,7 @@ public class ClientDataObject {
         this.profilePicture = profilePicture;
     }
 
-    public ClientDataObject(ObjectId profilePicture, String gameStamp, String username, String password, String email, boolean active, List<AuthenticationToken> tokens, int id) {
+    public ClientDataObject(ObjectId profilePicture, String username, String password, String email, boolean active, List<AuthenticationToken> tokens, int id) {
         this.username = username;
         this.password = password;
         this.email = email;
@@ -52,8 +47,18 @@ public class ClientDataObject {
         this.tokens = tokens;
         this.last_login = null;//new Date(0);
         this.id = id;
-        this.gameStamp = gameStamp;
-        this.profilePicture = new ObjectId("641f8497d0d9127eca673a2b");
+
+        this.profilePicture = profilePicture;
+        games = new ArrayList<>();
+    }
+
+    public List<ObjectId> getGames() {
+        return games;
+    }
+
+
+    public void setGames(ObjectId game) {
+        games.add(game);
     }
 
     public Date getLast_login() {

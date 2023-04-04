@@ -37,8 +37,6 @@ public class Server extends Thread {
     @Override
     public void run() {
 
-        String name;
-        String gameStamp;
         queueManager.start();
         Socket socket;
         while (true) {
@@ -50,14 +48,11 @@ public class Server extends Thread {
                 System.out.println("Connection interrupted");
                 continue;
             }
-
-
-            startClientThread(socket);
-
+            handelNewClientConnection(new Client(socket));
         }
     }
 
-    private boolean reconnect(String gameStamp, Socket newConnection) {
+    public boolean reconnect(String gameStamp, Socket newConnection) {
         for (int i = 0; i < reconnectingClients.size(); i++) {
             Client client = reconnectingClients.get(i);
             if (client.getGameStamp().equals(gameStamp)) {
@@ -101,21 +96,14 @@ public class Server extends Thread {
     public synchronized void connectNewClient(Client client) {
 
         clients.add(client);
-
+        startClientThread(client);
     }
 
-    // start new ClientThread with authentication sequence - for not previously authenticated clients
-    public synchronized void startClientThread(Socket socket) {
-        ClientThread clientThread = new ClientThread(gamesManager, this, socket, timeout);
-        clientThread.start();
-        clientsThreads.add(clientThread);
 
-    }
 
-    // start ClientThread for previously authenticated client
+    // start ClientThread for new client
     public synchronized void startClientThread(Client client) {
-        //ClientThread clientThread = new ClientThread(gamesManager, this, client, timeout);
-        ClientThread clientThread = new ClientThread(gamesManager,this,client.getClientSocket(),timeout);
+        ClientThread clientThread = new ClientThread(gamesManager, this, client, timeout);
         clientThread.start();
         clientsThreads.add(clientThread);
 

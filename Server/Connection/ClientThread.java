@@ -2,55 +2,33 @@ package org.connection;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
-import com.mongodb.client.gridfs.GridFSBucket;
-import com.mongodb.client.gridfs.GridFSBuckets;
-import com.mongodb.client.gridfs.model.GridFSDownloadOptions;
-import com.mongodb.client.gridfs.model.GridFSFile;
-import com.mongodb.client.gridfs.model.GridFSUploadOptions;
-import com.mongodb.client.model.Filters;
 import dev.morphia.Datastore;
 import dev.morphia.Morphia;
 import dev.morphia.query.FindOptions;
 import dev.morphia.query.Sort;
-import org.bson.Document;
-import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
 import java.io.*;
 import java.net.Socket;
 import java.util.*;
-import java.util.function.Consumer;
 
 import static dev.morphia.query.filters.Filters.eq;
 import static dev.morphia.query.filters.Filters.or;
 
 public class ClientThread extends Thread {
-    private GamesManager gamesManager;
-    private Socket connection;
-    private Object lock;
+    private final GamesManager gamesManager;
+    private final Socket connection;
     private final Server server;
-    private Client client;
+    private final Client client;
     private final int timeout;
     private final Datastore dbConnection;
     private final UserAuthenticator userAuthenticator;
     private final EmailSender emailSender;
 
-    public ClientThread(GamesManager gamesManager, Server server, Socket socket, int timeout) {
-        this.gamesManager = gamesManager;
-        this.server = server;
-        // lock = clientThreadsLock;
-        this.timeout = timeout;
-        this.client = null;
-        this.connection = socket;
-        emailSender = new EmailSender();
-        userAuthenticator = new UserAuthenticator();
-        dbConnection = establishDbConnection("CustomChess", "org.connection", "mongodb+srv://UwU:MamRadTuhleDatabazi69@customchess.hmtwp1r.mongodb.net/?retryWrites=true&w=majority");
-    }
 
     public ClientThread(GamesManager gamesManager, Server server, Client client, int timeout) {
         this.gamesManager = gamesManager;
         this.server = server;
-        // lock = clientThreadsLock;
         this.timeout = timeout;
         this.client = client;
         this.connection = client.getClientSocket();
@@ -60,16 +38,10 @@ public class ClientThread extends Thread {
 
     }
 
-    public ClientThread() {
-        dbConnection = establishDbConnection("CustomChess", "org.connection", "mongodb+srv://UwU:MamRadTuhleDatabazi69@customchess.hmtwp1r.mongodb.net/?retryWrites=true&w=majority");
-        server = null;
-        userAuthenticator = new UserAuthenticator();
-        timeout = 1;
-        emailSender = new EmailSender();
-    }
-
-
-
+    /*
+     Establish connection with MongoDb database specified by given connectionString and name and also set up Morphia
+     ORM mapper on classes of given package
+     */
     private Datastore establishDbConnection(String dbName, String packageName, String connectionString) {
         MongoClient mongoClient = MongoClients.create(connectionString);
         final Datastore datastore = Morphia.createDatastore(mongoClient, dbName);
@@ -82,7 +54,6 @@ public class ClientThread extends Thread {
          Accepted request format is "request type:username:password:email" - all parameters except request type
          are optional according to given request type
     */
-    // TODO lines starting with Sender are commented for testing purposes only
     public void authenticatedUser() throws IOException {
         boolean authenticated = false;
         ClientDataObject clientData;
@@ -110,14 +81,18 @@ public class ClientThread extends Thread {
                         break;
                     }
                     // creating new user entry in database
-                    int id =1;
-                  // int id = dbConnection.find(ClientDataObject.class).iterator(new FindOptions().projection().include("id").sort(Sort.descending("id")).limit(1)).toList().get(0).getId() + 1;
+                    ObjectId profilePicture = Receiver.readAndSaveFileToDatabase(dbConnection.getDatabase(), connection);
+
+                    int id = dbConnection.find(ClientDataObject.class).iterator(new FindOptions().projection().include("id").sort(Sort.descending("id")).limit(1)).toList().get(0).getId() + 1;
                     String hashedPasswordString = userAuthenticator.getHashedPasswordString(password, 390000);
-                  //  ObjectId profilePicture = Receiver.readAndSaveFileToDatabase(dbConnection.getDatabase(),connection);
-                    clientData = new ClientDataObject(new ObjectId("641f8497d0d9127eca673a2b"),null,username, hashedPasswordString, email, false, new ArrayList<>(), id);
                     String tokenValueString = userAuthenticator.getAuthenticationTokenString(32);
+
+                    clientData = new ClientDataObject(profilePicture, username, hashedPasswordString, email, false, new ArrayList<>(), id);
                     clientData.addToken(userAuthenticator.getAuthenticationToken(tokenValueString, 3000));
+
                     dbConnection.save(clientData);
+
+
                     emailSender.sendConfirmationEmail(email, userAuthenticator.getUrlEncodedId(id) + "/" + tokenValueString);
                     Sender.send(connection, "msg:success");
                     break;
@@ -128,11 +103,11 @@ public class ClientThread extends Thread {
                     try {
                         clientData = dbConnection.find(ClientDataObject.class).filter(or(eq("username", username), eq("email", username))).iterator().toList().get(0);
                     } catch (IndexOutOfBoundsException ex) {
-                        // Sender.send(connection,"err:authentication error");
+                        Sender.send(connection,"err:authentication error");
                         break;
                     }
                     if (!clientData.isActive()) {
-                        // Sender.send(connection,"err:account inactive");
+                         Sender.send(connection,"err:account inactive");
                         break;
                     }
                     // getting passwords hashes to compare
@@ -141,18 +116,25 @@ public class ClientThread extends Thread {
                     String clientPasswordHash = clientPasswordString[3];
                     if (clientPasswordHash.equals(authenticationPasswordHash)) {
                         // signing user in
-                        // TODO create Client instance
-                        authenticated = true;
+                        client.setAuthenticated(true);
+                        client.setName(username);
+                        client.setGameStamp(Receiver.readData(connection));
+
+                        if (server.reconnect(client.getGameStamp(), connection)) {
+                            server.removeClosedConnection(client, this);
+                            return;
+                        }
+
                         clientData.setLast_login(new Date(System.currentTimeMillis()));
-                        Sender.sendFileFromDatabase(dbConnection.getDatabase(),clientData.getProfilePicture(),connection);
                         dbConnection.save(clientData);
-                        System.out.println("success");
+
                         Sender.send(connection, "msg:success");
+                        Sender.sendFileFromDatabase(dbConnection.getDatabase(), clientData.getProfilePicture(), connection);
                         break;
                     }
                     // sign in failed
-                    //  Sender.send(connection,"err:authentication error");
-                    // TODO add authentication throttling
+                    Sender.send(connection, "err:authentication error");
+                    // TODO add authentication throttling (optional)
 
                     break;
                 case "reset": // password reset request handling
@@ -160,11 +142,11 @@ public class ClientThread extends Thread {
                     try {
                         clientData = dbConnection.find(ClientDataObject.class).filter(or(eq("username", username), eq("email", username))).iterator().toList().get(0);
                     } catch (IndexOutOfBoundsException ex) {
-                        // Sender.send(connection,"err:authentication error");
+                        Sender.send(connection, "err:authentication error");
                         break;
                     }
                     if (!clientData.isActive()) {
-                        // Sender.send(connection,"err:account inactive");
+                        Sender.send(connection, "err:account inactive");
                         break;
                     }
                     tokenValueString = userAuthenticator.getAuthenticationTokenString(32);
@@ -180,32 +162,45 @@ public class ClientThread extends Thread {
 
     }
 
-
-
+    /*
+     Main thread method that start client authentication sequence and after successful authentication start client
+     requests evaluation loop
+    */
     @Override
     public void run() {
-
-
-
-        if (client == null) {
+        if (!client.isAuthenticated()) {
             try {
                 authenticatedUser();
             } catch (IOException e) {
-                return;
+                try {
+                    Sender.send(connection,"err:authentication failed");
+                } catch (IOException ignored) {
+                }
+                try {
+                    connection.close();
+                } catch (IOException ignored) {
+
+                }
+                server.removeClosedConnection(client,this);
             }
         }
         handelClientsRequest();
         server.removeDeadThread(this);
+        try {
+            connection.close();
+        } catch (IOException ignored) {
+
+        }
         System.out.println("konec");
     }
-
+    // Main loop that hand over clients request to by handled
     private void handelClientsRequest() {
         boolean run = true;
         while (run) {
 
             try {
                 String input = Receiver.readData(connection);
-                System.out.println(input);
+                System.out.println(input); // debug
                 run = evaluateClientInput(input);
             } catch (IOException e) {
                 System.out.println("Umřel :(");
@@ -216,7 +211,8 @@ public class ClientThread extends Thread {
 
         }
     }
-
+    // Evaluate client requests after authentication
+    // TODO replace receiving files over socket with loading from database
     private boolean evaluateClientInput(String input) throws IOException {
         String[] splitInput = input.split(":");
         switch (splitInput[0]) {
@@ -234,16 +230,17 @@ public class ClientThread extends Thread {
                     Sender.send(connection, "err:GameIsFull");
                     return true;
                 }
-
                 return false;
+            case "add":
+                // TODO add adding new games definitions to database
             default:
-                System.out.println("wtf");
                 return true;
 
         }
 
     }
 
+    // TODO will be removed in future versions
     public List<File> receiveGameFiles(Socket creatorsSocket) throws IOException {
         List<File> files = new ArrayList<>();
         int numberOfFiles;
