@@ -42,6 +42,14 @@ table{
 .profileImg{
     
 }
+.nameLabel{
+    text-align: center;
+    color: whitesmoke;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+     overflow: hidden;
+}
+
 .navButton{
     height: 50px;
     width: 200px;

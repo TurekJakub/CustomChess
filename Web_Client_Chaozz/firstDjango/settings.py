@@ -79,23 +79,15 @@ ASGI_APPLICATION = 'firstDjango.asgi.application'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-
-#TODO tenhle nefacha ↓
-'''          
-DATABASES = {
-  'ENGINE': 'djongo',
+        'default': {
+            'ENGINE': 'djongo',
             'NAME': 'CustomChess',
             'ENFORCE_SCHEMA': False,
             'CLIENT': {
                 'host': 'mongodb+srv://UwU:MamRadTuhleDatabazi69@customchess.hmtwp1r.mongodb.net/?retryWrites=true&w=majority'
             }  
-'''
-
+        }
+}
 
 CHANNEL_LAYERS = {
     "default": {

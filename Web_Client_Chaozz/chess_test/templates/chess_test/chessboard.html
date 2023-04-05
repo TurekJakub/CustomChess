@@ -16,12 +16,12 @@
     {%block body%}
     <script>
        {# drawCanvas({{height}}, {{width}}, {{figures}}); production code #} 
-       drawCanvas(6, 9, { 'pawn': [2, 1] }); {# for testing purposes only #}
+       drawCanvas(8, 10, { 'pawn': [2, 1] }); {# for testing purposes only #}
     </script>
    <div class="container-fluid main_container d-flex ">
-        <div class=" row flex-fill align-items-center justify-content-end" style="height: calc(100vh - 90px);">          
-            <div id="chessboard" class="col-sm-9 mb-2 order-1 order-sm-2 mt-5 no-gutters">
-                <div class=" h-100 d-flex justify-content-center align-items-center " style="position: relative;">
+        <div class=" row flex-fill align-items-top justify-content-top" style="height: calc(100vh - 150px);">          
+            <div id="chessboard" class="col-sm-10 mb-2 order-1  order-sm-2 mt-2 no-gutters d-flex align-top">
+                <div class="w-100  justify-content-center mt-2 d-flex align-items-top" style="position: relative;" >
                     <canvas id="canvas-background" style="position: absolute; z-index: 0"></canvas>
                     <canvas id="canvas-figures" style="position: absolute; z-index: 1"></canvas>
                     <canvas id="canvas-moves" style="position: absolute; z-index: 2"></canvas>
@@ -29,9 +29,9 @@
                         onclick="handleClickCanvas(event)"></canvas>
                 </div>
             </div>
-            <div class=" col-sm-3 order-sm-3 order-3 no-gutters d-flex justify-content-center h-100 align-items-top mt-3 mx-0"
+            <div class=" col-sm-2 order-sm-3 order-3 no-gutters d-flex justify-content-center  align-items-top mt-2 mx-0"
                 id="display_2">
-                <div class=" bg-secondary w-100 mx-0 card" style="height: 100px;">
+                <div class=" bg-dark w-100 mx-0 card" style="height: 50px;">
                     <div class="w-100 d-flex align-items-center">
                         <img class=" rounded me-auto d-flex align-items-center " src="{% static 'temp' %}/pawn.svg"
                             alt="" style="height: 50px;">
