@@ -7,7 +7,7 @@ from .connection import *
 from .models import *
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
-from .forms import sign_up_form, sign_in_form
+from .forms import Upload, sign_up_form, sign_in_form
 from django.contrib.auth.models import User
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
@@ -17,7 +17,7 @@ connection = None
 @csrf_exempt
 def sign_in(request):     
     global connection   
-    establish_connectio() 
+    #establish_connection() #FIXME
     if (request.method == 'POST'):
         form = sign_in_form(request.POST)
 
@@ -36,7 +36,7 @@ def sign_in(request):
 @csrf_exempt
 def sign_up(request):
     global connection
-    establish_connectio()
+    #establish_connection() #FIXME
    
 
     if (request.method == 'POST'):
@@ -55,7 +55,7 @@ def sign_up(request):
     return render(request,'chess_test/signup.html') 
 
 @csrf_exempt
-@login_required
+#@login_required #FIXME
 def game(request):
 
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -80,9 +80,19 @@ def game(request):
     print("Změna")
     return render(request, 'chess_test/chessboard.html', context)
 
-def establish_connectio():
+def establish_connection(): #FIXME
     global connection
     if(connection == None):
-        connection = Connection()    
+        connection = Connection()
+
+@csrf_exempt
+def field(request):
+    if request.POST:
+        form = Upload(request.POST, request.FILES)
+        print(request.FILES)
+        if form.is_valid():
+            form.save()
+        return redirect() #TODO
+    return render(request, 'fieldgeneration.html', {'form': Upload})
 
    
