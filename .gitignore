@@ -7,3 +7,4 @@ Server/Connection/test.java
 Web_Client_Chaozz/chess_test/static/temp/test.png
 *.jpg
 Web_Client_Chaozz/venv/
+Web_Client_Chaozz/db.sqlite3
