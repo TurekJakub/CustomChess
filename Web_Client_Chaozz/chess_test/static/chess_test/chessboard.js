@@ -156,7 +156,7 @@ function drawFigures(figure, ctx) {
       console.log(path + '/' + figur + '.svg')
       console.log(position[0] + ' ' + position[1])
     };
-    img.src = path + '/' + figur + '.svg';
+    img.src = path + '/' + figur.replace('&#x27;',"'") + '.svg';
   }
 
 }
