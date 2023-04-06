@@ -7,17 +7,23 @@ from .connection import *
 from .models import *
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
-from .forms import Upload, sign_up_form, sign_in_form
+from .forms import sign_up_form, sign_in_form
 from django.contrib.auth.models import User
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.templatetags.static import static
 connection = None
+gameInfo = {
+    'height': -1,
+    'width': -1,
+    'figures': {},
+    'tags': {},
+}
 
 @csrf_exempt
 def sign_in(request):     
     global connection   
-    #establish_connection() #FIXME
+    establish_connectio() 
     if (request.method == 'POST'):
         form = sign_in_form(request.POST)
 
@@ -36,7 +42,7 @@ def sign_in(request):
 @csrf_exempt
 def sign_up(request):
     global connection
-    #establish_connection() #FIXME
+    establish_connectio()
    
 
     if (request.method == 'POST'):
@@ -55,9 +61,14 @@ def sign_up(request):
     return render(request,'chess_test/signup.html') 
 
 @csrf_exempt
-#@login_required #FIXME
+@login_required
 def game(request):
-
+    global gameInfo
+    global connection
+   # establish_connectio()
+    # recieve information about game
+   
+    
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         if (request.POST.get('requested') == 'fig'):
 
@@ -75,24 +86,13 @@ def game(request):
             pass
 
     f = {'pawn': [1, 2]}
+    gameInfo['figures'] = f
+    
+    return render(request, 'chess_test/chessboard.html', context=gameInfo)
 
-    context = {"figures": f, "a": 7, "b": 6}
-    print("Změna")
-    return render(request, 'chess_test/chessboard.html', context)
-
-def establish_connection(): #FIXME
+def establish_connectio():
     global connection
     if(connection == None):
-        connection = Connection()
-
-@csrf_exempt
-def field(request):
-    if request.POST:
-        form = Upload(request.POST, request.FILES)
-        print(request.FILES)
-        if form.is_valid():
-            form.save()
-        return redirect() #TODO
-    return render(request, 'fieldgeneration.html', {'form': Upload})
+        connection = Connection()    
 
    
