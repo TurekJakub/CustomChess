@@ -44,7 +44,9 @@ async function sendMove(x, y) {
     type: 'post',
     data: {
       requested: 'post-fig',
-      move: x + ':' + y
+      move: x + ':' + y,
+      figure: lastSelected,
+      transcript: 'none' // transcript is not implemented yet
     },
   });
 }
@@ -74,7 +76,7 @@ function getNewSquerSize() {
 
   x = document.getElementById('chessboard').offsetWidth;
   y = document.getElementById('chessboard').offsetHeight;
-  
+
   a = Math.min(y / height, x / width)
 
 
@@ -151,12 +153,9 @@ function markMoves(moves, ctx) {
 function drawFigures(figure, ctx) {
   for (const [figur, position] of Object.entries(figure)) {
     img.onload = function () {
-
       ctx.drawImage(img, (position[0] - 1) * a, (position[1] - 1) * a, a, a);
-      console.log(path + '/' + figur + '.svg')
-      console.log(position[0] + ' ' + position[1])
     };
-    img.src = path + '/' + figur.replace('&#x27;',"'") + '.svg';
+    img.src = path + '/' + figur + '.svg';
   }
 
 }
@@ -178,18 +177,22 @@ function resizeAllLayers() {
 }
 // redraw chessboard usually at a new scale
 function redrawCanvas() {
-  drawCanvas(height, width)
+  drawCanvas(height, width, figures)
 }
 // draw whole chessboard
-async function drawCanvas(heightc, widthc) {
-  height = heightc;
-  width = widthc;
+async function drawCanvas(heightParam, widthParam, figuresParam) {
+  height = heightParam;
+  width = widthParam;
+  /*
   if (figures === null) {
 
     figures = await doAjaxCall('fig');
   }
+  */
+  figures = figuresParam;
   resizeAllLayers();
   drawChessboard(height, width);
+  console.log(figures)
   drawFigures(figures, document.getElementById('canvas-figures').getContext('2d'));
   markMoves(moves, document.getElementById('canvas-moves').getContext('2d'));
 

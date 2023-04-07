@@ -13,11 +13,14 @@ from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.templatetags.static import static
 connection = None
-gameInfo = {
-    'height': -1,
-    'width': -1,
-    'figures': {},
-    'tags': {},
+players_turn = True
+game_info = {
+    'height': -1, # height of board
+    'width': -1, # width of board  
+    'moves': {'pawn': ['2:2', '2:3']}, # moves of figures, format: {'figure_name': [move1, move2, ...], ...}
+    'figures': {'pawn': [3, 2]}, # positions of figures, format: {'figure_name': [x,y], ...}
+    'perma_tags': [[]],  # positions of tags that are not removed after turn, format: [[tag_name, x, y], ...]
+    'tags': [['red',1,2]], # positions of tags that are removed after turn, format: [[tag_name, x, y], ...]
 }
 
 @csrf_exempt
@@ -31,7 +34,7 @@ def sign_in(request):
             data = form.cleaned_data              
             connection.send_data(f"signin:{data['username']}:{data['password']}")             
             file_name = connection.recieve_file()           
-            response_status =  connection.recieve_data().split(':')[1].strip()  
+            response_status =  connection.recieve_data().split(':')[1]
             if( response_status == 'success'):
              user = User.objects.create_user(username=data['username'],password= data['password'])
              login(request, user)
@@ -52,7 +55,7 @@ def sign_up(request):
             data = form.cleaned_data       
             connection.send_data(f"signup:{data['username']}:{data['password']}:{data['email']}")
            # connection.send_file(data['image']) 
-            response_status =  connection.recieve_data().split(':')[1].strip()           
+            response_status =  connection.recieve_data().split(':')[1]  
             if response_status[1] == 'success':                
                 return render(request,'chess_test/signupsuccess.html')            
             return render(request,'chess_test/signup.html',context={'msg':response_status[1]}) 
@@ -63,36 +66,62 @@ def sign_up(request):
 @csrf_exempt
 @login_required
 def game(request):
-    global gameInfo
+    global game_info
     global connection
-   # establish_connectio()
-    # recieve information about game
-   
-    
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        if (request.POST.get('requested') == 'fig'):
+    global players_turn
+    """
+    #connect to server 
+    establish_connectio()
+    #recieve information about game
+    initialize_game_information() 
+    """  
+    if(players_turn):
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            if (request.POST.get('requested') == 'figures'):            
+                return JsonResponse(game_info['figures'])
+            elif (request.POST.get('requested') == 'moves'):
+                """
+                layer = get_channel_layer()
+                async_to_sync(layer.group_send)('events', {
+                    'type': 'events_alarm',
+                    'content': '0:0:0:7'
+                })
+                """
+                return JsonResponse(game_info['moves'])
+            elif (request.POST.get('requested') == 'post-fig'):
+                connection.send_data(request.POST.get('move')+':'+request.POST.get('figure')+':'+request.POST.get('transcription'))
+                response_status =  connection.recieve_data().split(':')[1]
+                if(response_status == 'continue'):
+                     update_game_information(connection.recieve_data().split(':'))  
+                if(response_status == 'next'):
+                    update_game_information(connection.recieve_data().split(':'))  
+                    players_turn = False
+                if(response_status == 'end'):
+                    pass # not implemented yet                  
+    else:       
+          return JsonResponse({'msg':'nejsi na tahu'}) 
+    return render(request, 'chess_test/chessboard.html', context=game_info)
 
-            print('kjadsfhakjfhKJ')
-            return JsonResponse({'fig': {'pawn': ['2', '1']}})
-        elif (request.POST.get('requested') == 'pos'):
-            layer = get_channel_layer()
-            async_to_sync(layer.group_send)('events', {
-                'type': 'events_alarm',
-                'content': '0:0:0:7'
-            })
-            return JsonResponse({'pos': {'pawn': ['2:2', '2:3']}})
-        elif (request.POST.get('requested') == 'post-fig'):
-            # c.send_data(request.POST.get('move'))
-            pass
-
-    f = {'pawn': [1, 2]}
-    gameInfo['figures'] = f
-    
-    return render(request, 'chess_test/chessboard.html', context=gameInfo)
-
+# establish connection with server if it is not established yet
 def establish_connectio():
     global connection
     if(connection == None):
-        connection = Connection()    
+        connection = Connection()
+
+def initialize_game_information():
+    global game_info
+    global connection
+    if(game_info['height'] == -1):
+        input = connection.recieve_data().split(':')
+        game_info['height'] = input[0]
+        game_info['width'] = input[1]
+        game_info['perma_tags'] = input[2]
+        update_game_information(input[3:6])
+
+def update_game_information(input):
+    global game_info    
+    game_info['figures'] = input[0]
+    game_info['moves'] = input[1]
+    game_info['tags'] = input[2]
 
    

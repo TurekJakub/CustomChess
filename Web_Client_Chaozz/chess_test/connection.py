@@ -17,14 +17,14 @@ class Connection:
     def establish_connectio(self, host, port, host_name):
         context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
         context.verify_mode = ssl.CERT_REQUIRED
-        context.load_verify_locations('C:/users/jakub/desktop/c.pem')
+        context.load_verify_locations('C:/users/jakub/desktop/c.pem') # path to certificate file set for testing certificate
         socket = s.create_connection((host, port))
         return context.wrap_socket(socket, server_hostname=host_name)
 
     def wait_until_next_turn(self):
 
         while True:
-            message = self.connection.recv().decode('utf-8')
+            message = self.recieve_data()
             if ('notify' in message):
                 break
             if ('update' in message):
@@ -40,7 +40,7 @@ class Connection:
             number_of_files = number_of_files - 1
 
     def recieve_file(self):
-        file_info = self.connection.recv().decode('utf-8').split(':')
+        file_info = self.recieve_data.split(':')
         size = int(file_info[1].strip())
         with open('./chess_test/static/temp/' + file_info[0], 'wb') as file:
             while 0 < size:
@@ -57,7 +57,7 @@ class Connection:
             self.connection.sendall(chunk)        
 
     def recieve_data(self):
-        return self.connection.recv().decode('utf-8')
+        return self.connection.recv().decode('utf-8').strip()
 
     def send_data(self, data):
         self.connection.sendall(len(data).to_bytes(4, 'big'))
