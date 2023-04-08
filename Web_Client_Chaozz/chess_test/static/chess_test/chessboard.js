@@ -15,6 +15,8 @@ let lineEquationA;
 let b;
 let c
 let forward;
+let lastWidth;
+let switched = false;
 let img = new Image();
 
 
@@ -73,14 +75,20 @@ function drawChessboard() {
 }
 // calculate new size of chessboard's square
 function getNewSquerSize() {
+  if ($(document).width() < 576) {
+    y = $(document).height() - $(document).height() * 1 / 4
+    x = $(document).width()
+  }
+  else {
+    y = $(document).height() - 90
+    x = $(document).width() - $(document).width() * 1 / 6
 
-  x = document.getElementById('chessboard').offsetWidth;
-  y = document.getElementById('chessboard').offsetHeight;
-
+  }
   a = Math.min(y / height, x / width)
 
-
-
+}
+function initializ() {
+  lastWidth = $(document).width()
 }
 // resize given canvas to half of current window size or to screen width on small mobile dievices
 function resizeCanvas(canvas) {
@@ -165,13 +173,47 @@ function unmarkMoves(ctx) {
 }
 // resize all canvases - layers of chessboard
 function resizeAllLayers() {
+
   getNewSquerSize();
   resizeCanvas(document.getElementById('canvas-background'));
   resizeCanvas(document.getElementById('canvas-figures'));
   resizeCanvas(document.getElementById('canvas-moves'));
   resizeCanvas(document.getElementById('canvas-animations'));
 
-  console.log(window.innerWidth + " " + window.innerHeight)
+  adjustPageLayout()
+  console.log(a)
+  //console.log(window.innerWidth + " " + window.innerHeight)
+
+
+}
+function adjustPageLayout() {
+  if (($(document).width() < 576 && (lastWidth > 576 || !switched)) || ($(document).width() > 576 && lastWidth < 576)) {
+    topContainerContent = $('#container-top').html()
+    $('#container-top').html($('#container-bottom').html())
+    $('#container-bottom').html(topContainerContent)
+    lastWidth = $(document).width()
+    switched = true;
+    console.log($(document).width())
+  }
+  $('#column-1').css('height', height * a + 'px');
+  /* TODO: fix this
+  if ($(document).width() < 576) {
+    $('#container-top').width(width * a + 'px');
+    $('#container-bottom').width( width * a + 'px');
+    if(!$('#container-top').attr('class').includes('mx-auto')) {
+    $('#container-top').attr('class',$('#container-top').attr('class') +' mx-auto');
+    $('#container-bottom').attr('class',$('#container-bottom').attr('class')+' mx-auto');}
+  }
+  else {
+    $('#container-top').attr('style','height=12.5%');
+    $('#container-bottom').attr('style','height=12.5%;');
+    
+    $('#container-top').attr('class',$('#container-top').attr('class').replace('mx-auto',''));
+    $('#container-bottom').attr('class',$('#container-bottom').attr('class').replace('mx-auto',''));
+    
+  }
+  */
+
 
 
 }
