@@ -17,38 +17,43 @@
     <script>
        {# drawCanvas({{height}}, {{width}}, {{figures|safe}}); production code #} 
        $( document ).ready(function() {
-           drawCanvas(8, 8, {{figures|safe}});
+           drawCanvas(15, 8, {{figures|safe}});
+           initializ();
        });
       {# drawCanvas(8, 8, {{figures|safe}}); {# for testing purposes only #}
     </script>
    <div class="container-fluid main_container d-flex ">
-        <div class=" row flex-fill align-items-top justify-content-top" style="height: calc(100vh - 150px);">          
-            <div class="col-sm-10 mb-2 order-1 order-sm-2 mt-2 no-gutters d-flex align-top">
-                <div id="chessboard" class="w-100 h-100  ms-2 me-2 justify-content-center mt-2 d-flex align-items-top" style="position: relative;" >
-                    <canvas id="canvas-background" style="position: absolute; z-index: 0"></canvas>
+        <div class=" row flex-fill align-items-top justify-content-top" style="height: calc(100vh - 90px);">          
+            <div id="column-1"class="col-sm-10 no-gutters d-flex align-top">
+                <div id="chessboard" class="w-100 justify-content-center mt-2 d-flex align-items-top" style="position: relative;" >
+                    <canvas id="canvas-background" class="rounded" style="position: absolute; z-index: 0"></canvas>
                     <canvas id="canvas-figures" style="position: absolute; z-index: 1"></canvas>
                     <canvas id="canvas-moves" style="position: absolute; z-index: 2"></canvas>
                     <canvas id="canvas-animations" style="position: absolute; z-index: 3"
                         onclick="handleClickCanvas(event)"></canvas>
                 </div>
             </div>
-            <div class=" col-sm-2 order-sm-3 order-3 no-gutters d-flex flex-column  mt-2 mx-0"    id="display">
-                <div class=" bg-dark w-100 mt-1 mb-auto card  " style="height: 50px;">
-                    <div class="w-100 d-flex align-items-center">
-                        <img class=" rounded me-auto d-flex align-items-center " src="{% static 'temp' %}/pawn.svg"
-                            alt="" style="height: 50px;">
-                        <div class=" d-flex align-items-center ms-auto  ">UwU</div>
+            <div class="col-sm-2 no-gutters d-flex flex-column  mx-0" id="display">
+                <div id="container-top" class="mt-2 ">
+                    <div class="w-100 mt-2 d-flex align-items-center bg-dark rounded border border-light">
+                        <img class="  rounded me-2 mt-1 ms-1 mb-1 d-flex align-items-center selectDisable " src="{% static 'temp' %}/pawn.svg"
+                            alt="" style="height: 40px; width: 40px;">
+                            <label class=" ms-auto me-2 selectDisable nameLabel" >UwU</label>
                     </div>
-
                 </div>
-                <div class="h-25 w-100 card align-self-end bg-secondary">
-                    <ul id="toggler" class="list-group h-50">
-                        <li class="list-group-item h-50">První toggle</li>
+              
+            <div id="container-bottom" class="mt-auto mb-2 ">
+                <div class="w-100 bg-success mt-2" style="height=12.5%">
+                    <ul id="toggler" class="list-group h-50 bg-dark border border-light">
+                        <li class="list-group-item bg-dark border-0 text-light" style="cursor: pointer;" onclick="console.log('UwU')">První toggle</li>
                       </ul>
-                    <ul id="transcription-selector" class="list-group">
-                        <li class="list-group-item">První přepis</li>                       
-                    </ul>
                 </div>
+                <div class="w-100 mt-2 bg-success" style="height=12.5%">
+                    <ul id="toggler" class="list-group h-50 bg-dark border border-light">
+                        <li class="list-group-item bg-dark text-light" style="cursor: pointer;" onclick="console.log('UwU')">První toggle</li>
+                      </ul>
+                </div>
+            </div>
                 
             </div>
         </div>
@@ -87,7 +92,8 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN"
-    crossorigin="anonymous"></script>
+    crossorigin="anonymous">
+</script>
 
 
 </html>

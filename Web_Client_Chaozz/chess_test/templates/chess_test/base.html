@@ -12,7 +12,7 @@
     {% block head %}{% endblock %}
 </head>
 <body class="bg-success"  {% block body_atributes%}{% endblock %}> 
-    <nav class="navbar navbar-dark bg-dark ">
+    <nav class="navbar navbar-dark bg-dark " style="height:80px">
         <div class="container-fluid d-flex justify-content-center">
            
             <h1 class="selectDisable me-auto">CUSTOM CHESS</h1>
@@ -20,17 +20,16 @@
             {% block profile_visibility %}  
             <div class="nav-item dropdown ps-3 d-none d-sm-block" style="width:calc(100% * 2/12);">
                 <button class=" px-0 mx-0 bg-dark w-100 ms-auto rounded border border-secondary navButton"
-                    data-bs-toggle="dropdown" aria-expanded="false" style="height: 50px;
-                    width: auto;">
+                    data-bs-toggle="dropdown" aria-expanded="false" >
                     <div class="w-100 d-flex align-items-center">
                         <img class=" rounded me-2 mt-1 ms-1 mb-1 d-flex align-items-center selectDisable border border-success"
                            {%if signin %} src="{% static 'temp' %}{{profile_picture}}"{%else%} src="{% static 'chess_test' %}/bocchi.jpg" {% endif%}alt="" style="height: 40px; width: 40px;">
                         <label class=" ms-auto me-2 selectDisable nameLabel" style="">{% if signin %}{{username}}{%else%}Bocchi the Rock!{% endif %}</label>
                     </div>
                 </button>
-                <div class="dropdown-menu dropdown-menu-center  bg-dark rounded">
+                <div class="dropdown-menu dropdown-menu-center w-50 bg-dark rounded" >
                 {% if signin  %}
-                <button class="dropdown-item w-50 bg-dark navButton text-white">Log out</button>
+                <button class="dropdown-item w-100 bg-dark navButton text-white">Log out</button>
                 {% else %}
                 <form class="w-75 ms-auto me-auto " method="post">
                     <div class="form-group">
@@ -42,7 +41,7 @@
                         <label for="id_password">Heslo</label>
                         <input type="password" class="form-control" id="id_password" placeholder="Password" name="password">
                     </div>                       
-                    <button type="submit" class="btn btn-primary">Odeslat</button>
+                    <button type="submit" class="btn w-100 btn-primary">Odeslat</button>
                     <p class="text-danger">{{msg}}</p>
                 </form>
                 {% endif %}
