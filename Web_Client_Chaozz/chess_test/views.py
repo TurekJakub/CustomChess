@@ -12,21 +12,21 @@ from django.contrib.auth.models import User
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.templatetags.static import static
-connection = None
+from .connection import get_connection
+
 players_turn = True
 game_info = {
     'height': -1, # height of board
     'width': -1, # width of board  
     'moves': {'pawn': ['2:2', '2:3']}, # moves of figures, format: {'figure_name': [move1, move2, ...], ...}
-    'figures': {'pawn': [3, 2]}, # positions of figures, format: {'figure_name': [x,y], ...}
+    'figures': {'pawn': [2, 1]}, # positions of figures, format: {'figure_name': [x,y], ...}
     'perma_tags': [[]],  # positions of tags that are not removed after turn, format: [[tag_name, x, y], ...]
     'tags': [['red',1,2]], # positions of tags that are removed after turn, format: [[tag_name, x, y], ...]
 }
 
 @csrf_exempt
 def sign_in(request):     
-    global connection   
-    establish_connectio() 
+    connection = get_connection()      
     if (request.method == 'POST'):
         form = sign_in_form(request.POST)
 
@@ -39,15 +39,12 @@ def sign_in(request):
              user = User.objects.create_user(username=data['username'],password= data['password'])
              login(request, user)
              return render(request, 'chess_test/index.html', context={'signin':True,'username':data['username'],'profile_picture':f"/{file_name}"})
-            return render(request, 'chess_test/index.html', context={'msg':'Neplatné přihlasšovací údaje'})
+            return render(request, 'chess_test/index.html', context={'msg':'Neplatné přihlašovací údaje'})
     return render(request, 'chess_test/index.html')
 
 @csrf_exempt
 def sign_up(request):
-    global connection
-    establish_connectio()
-   
-
+    connection = get_connection()
     if (request.method == 'POST'):
         form = sign_up_form(request.POST,request.FILES)        
         print(form)
@@ -66,8 +63,7 @@ def sign_up(request):
 @csrf_exempt
 @login_required
 def game(request):
-    global game_info
-    global connection
+    global game_info    
     global players_turn
     """
     #connect to server 
@@ -75,6 +71,7 @@ def game(request):
     #recieve information about game
     initialize_game_information() 
     """  
+    connection = get_connection()
     if(players_turn):
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             if (request.POST.get('requested') == 'figures'):            

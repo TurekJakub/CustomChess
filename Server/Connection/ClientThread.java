@@ -142,19 +142,18 @@ public class ClientThread extends Thread {
                     try {
                         clientData = dbConnection.find(ClientDataObject.class).filter(or(eq("username", username), eq("email", username))).iterator().toList().get(0);
                     } catch (IndexOutOfBoundsException ex) {
-                        Sender.send(connection, "err:authentication error");
+                        Sender.send(connection, "err:učet nenalezen");
                         break;
                     }
                     if (!clientData.isActive()) {
-                        Sender.send(connection, "err:account inactive");
+                        Sender.send(connection, "err:účet není aktivován");
                         break;
                     }
                     tokenValueString = userAuthenticator.getAuthenticationTokenString(32);
                     clientData.addToken(userAuthenticator.getAuthenticationToken(tokenValueString, 3000));
                     dbConnection.save(clientData);
                     emailSender.sendResetPasswordEmail(clientData.getEmail(), userAuthenticator.getUrlEncodedId(clientData.getId()) + "/" + tokenValueString);
-                    authenticated = true; //debug
-
+                    Sender.send(connection,"msg:success");
                     break;
 
             }

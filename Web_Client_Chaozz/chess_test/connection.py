@@ -6,8 +6,15 @@ from . import routing
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
+connection = None
+def get_connection():
+    global connection
+    if(connection == None):
+        connection = Connection()
+    return connection
 
 class Connection:
+   
 
     def __init__(self):
         self.connection = self.establish_connectio('127.0.0.1', 443, 'UwU')
