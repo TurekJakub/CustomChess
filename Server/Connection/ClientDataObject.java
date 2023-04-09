@@ -14,7 +14,7 @@ import java.util.List;
  * Data class used for representing user data in database for ORM alternative of MongoDB
  *
  * */
-@Entity("auth_user")
+@Entity("chess_user")
 public class ClientDataObject {
     @Id
     ObjectId _id;

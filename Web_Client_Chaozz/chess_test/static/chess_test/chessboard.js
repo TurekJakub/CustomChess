@@ -32,7 +32,8 @@ async function doAjaxCall(requested) {
     },
 
     success: function (response) {
-      data = response[requested];
+      data = response;
+      
     },
 
 
@@ -76,15 +77,15 @@ function drawChessboard() {
 // calculate new size of chessboard's square
 function getNewSquerSize() {
   if ($(window).width() < 576) {
-    y = $(window).height() - $(window).height() * 1 / 4 
-    x = $(window).width() -20
+    y = $(window).height() - $(window).height() * 1 / 4
+    x = $(window).width() - 20
   }
   else {
     y = $(window).height() - 90
-    x = $(window).width() 
+    x = $(window).width()
   }
   a = Math.min(y / height, x / width)
-  console.log($(window).width() + ':' + $(window).height() + ':' +a)
+  console.log($(window).width() + ':' + $(window).height() + ':' + a)
 
 }
 function initializ() {
@@ -113,7 +114,7 @@ async function handleClickCanvas(event) {
   }
   if (positions === null) {
 
-    positions = await doAjaxCall('pos');
+    positions = await doAjaxCall('moves');
   }
 
   for (let key in figures) {
@@ -122,6 +123,7 @@ async function handleClickCanvas(event) {
       if (selected) {
         unmarkMoves(document.getElementById('canvas-moves').getContext('2d'));
       }
+      console.log(positions)
       moves = positions[key];
       markMoves(moves, document.getElementById('canvas-moves').getContext('2d'));
       lastSelected = key;
@@ -186,7 +188,9 @@ function resizeAllLayers() {
 
 
 }
+// adjust page layout depending on screen size
 function adjustPageLayout() {
+  // swap toggler and list of players on small mobile devices
   if (($(window).width() < 576 && (lastWidth > 576 || !switched)) || ($(window).width() > 576 && lastWidth < 576)) {
     topContainerContent = $('#container-top').html()
     $('#container-top').html($('#container-bottom').html())
@@ -195,24 +199,27 @@ function adjustPageLayout() {
     switched = true;
     console.log($(window).width())
   }
+  // adjust height of chessboard
   $('#column-1').css('height', height * a + 'px');
-
+  // adjus width of toggler and list of players
   if ($(window).width() < 576) {
     $('#container-top').width(width * a + 'px');
-    $('#container-bottom').width( width * a + 'px');
-    if(!$('#container-top').attr('class').includes('mx-auto')) {
-    $('#container-top').attr('class',$('#container-top').attr('class') +'mx-auto');
-    $('#container-bottom').attr('class',$('#container-bottom').attr('class')+'mx-auto');}
+    $('#container-bottom').width(width * a + 'px');
+    if (!$('#container-top').attr('class').includes('mx-auto')) {
+      $('#container-top').attr('class', $('#container-top').attr('class') + 'mx-auto');
+      $('#container-bottom').attr('class', $('#container-bottom').attr('class') + 'mx-auto');
+    }
   }
+  // reset defaul layout for bigger screens
   else {
-    $('#container-top').attr('style','height=12.5%');
-    $('#container-bottom').attr('style','height=12.5%');
-    
-    $('#container-top').attr('class',$('#container-top').attr('class').replace('mx-auto',''));
-    $('#container-bottom').attr('class',$('#container-bottom').attr('class').replace('mx-auto',''));
-    
+    $('#container-top').attr('style', 'height=12.5%');
+    $('#container-bottom').attr('style', 'height=12.5%');
+
+    $('#container-top').attr('class', $('#container-top').attr('class').replace('mx-auto', ''));
+    $('#container-bottom').attr('class', $('#container-bottom').attr('class').replace('mx-auto', ''));
+
   }
-  
+
 
 }
 // redraw chessboard usually at a new scale
@@ -245,6 +252,7 @@ function setAnimationCordinates(startX, startY, endX, endY) {
   endXCordinate = endX * a;
   endYCordinate = endY * a;
   lineEquationA = endYCordinate - newYCordinate;
+  img.src = path + '/' + lastSelected + '.svg';
   b = -1 * (endXCordinate - newXCordinate);
   c = -1 * (lineEquationA * newXCordinate + b * newYCordinate)
 
@@ -282,17 +290,18 @@ function drawAnimationFrame() {
     newYCordinate = Math.abs((-1 * lineEquationA * newXCordinate - c) / b);
     console.log(newXCordinate + ' ' + newYCordinate)
   }
-  ctx.fillStyle = 'blue'
+  
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-  ctx.fillRect(newXCordinate, newYCordinate, a, a)
+  ctx.drawImage(img, newXCordinate, newYCordinate, a, a);
+  
+
   if ((newYCordinate < endYCordinate || newXCordinate < endXCordinate && forward) || newYCordinate > endYCordinate && newXCordinate > endXCordinate && !forward) {
     window.requestAnimationFrame(drawAnimationFrame) // recusive call for the next animation frame
   }
   else { // if animation ends figure is draw at it's finall position    
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
     ctx = document.getElementById('canvas-figures').getContext('2d')
-    ctx.fillStyle = 'red'
-    ctx.fillRect(endXCordinate, endYCordinate, a, a)
+    ctx.drawImage(img, newXCordinate, newYCordinate, a, a);
 
   }
 
