@@ -75,20 +75,20 @@ function drawChessboard() {
 }
 // calculate new size of chessboard's square
 function getNewSquerSize() {
-  if ($(document).width() < 576) {
-    y = $(document).height() - $(document).height() * 1 / 4
-    x = $(document).width()
+  if ($(window).width() < 576) {
+    y = $(window).height() - $(window).height() * 1 / 4 
+    x = $(window).width() -20
   }
   else {
-    y = $(document).height() - 90
-    x = $(document).width() - $(document).width() * 1 / 6
-
+    y = $(window).height() - 90
+    x = $(window).width() 
   }
   a = Math.min(y / height, x / width)
+  console.log($(window).width() + ':' + $(window).height() + ':' +a)
 
 }
 function initializ() {
-  lastWidth = $(document).width()
+  lastWidth = $(window).width()
 }
 // resize given canvas to half of current window size or to screen width on small mobile dievices
 function resizeCanvas(canvas) {
@@ -187,34 +187,32 @@ function resizeAllLayers() {
 
 }
 function adjustPageLayout() {
-  if (($(document).width() < 576 && (lastWidth > 576 || !switched)) || ($(document).width() > 576 && lastWidth < 576)) {
+  if (($(window).width() < 576 && (lastWidth > 576 || !switched)) || ($(window).width() > 576 && lastWidth < 576)) {
     topContainerContent = $('#container-top').html()
     $('#container-top').html($('#container-bottom').html())
     $('#container-bottom').html(topContainerContent)
-    lastWidth = $(document).width()
+    lastWidth = $(window).width()
     switched = true;
-    console.log($(document).width())
+    console.log($(window).width())
   }
   $('#column-1').css('height', height * a + 'px');
-  /* TODO: fix this
-  if ($(document).width() < 576) {
+
+  if ($(window).width() < 576) {
     $('#container-top').width(width * a + 'px');
     $('#container-bottom').width( width * a + 'px');
     if(!$('#container-top').attr('class').includes('mx-auto')) {
-    $('#container-top').attr('class',$('#container-top').attr('class') +' mx-auto');
-    $('#container-bottom').attr('class',$('#container-bottom').attr('class')+' mx-auto');}
+    $('#container-top').attr('class',$('#container-top').attr('class') +'mx-auto');
+    $('#container-bottom').attr('class',$('#container-bottom').attr('class')+'mx-auto');}
   }
   else {
     $('#container-top').attr('style','height=12.5%');
-    $('#container-bottom').attr('style','height=12.5%;');
+    $('#container-bottom').attr('style','height=12.5%');
     
     $('#container-top').attr('class',$('#container-top').attr('class').replace('mx-auto',''));
     $('#container-bottom').attr('class',$('#container-bottom').attr('class').replace('mx-auto',''));
     
   }
-  */
-
-
+  
 
 }
 // redraw chessboard usually at a new scale
