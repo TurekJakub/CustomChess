@@ -5,6 +5,9 @@ public class Piece {
     String name;
     String mark = "?";
     String color = "\033[0;35m";
+    String team;
+    int x;
+    int y;
 
     ArrayList<Tag> tags;
     HashMap<String, Integer> counters = new HashMap<>();
