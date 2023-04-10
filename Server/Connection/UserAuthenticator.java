@@ -66,7 +66,7 @@ public class UserAuthenticator {
       Return instance of AuthenticationToken with given value prepared for saving in database
     */
     public AuthenticationToken getAuthenticationToken(String tokenValueString, int numberOfIterations) {
-        String tokenValueHash = getPasswordHash(tokenValueString, "", numberOfIterations);
+        String tokenValueHash ="pbkdf2_sha256$" + numberOfIterations + "$" + "" + "$" +  getPasswordHash(tokenValueString, "", numberOfIterations);
         return new AuthenticationToken(tokenValueHash);
     }
 
