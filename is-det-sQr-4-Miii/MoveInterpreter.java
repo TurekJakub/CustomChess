@@ -4,7 +4,7 @@ import java.util.Set;
 
 
 public class MoveInterpreter {
-    private Board board;
+    Board board;
     private MoveInterpreter olderMI;
 
     boolean mustCapture, mustNotCapture, leap, hop;
@@ -14,6 +14,7 @@ public class MoveInterpreter {
     Set<int[]> dirs;
 
     public HashSet<int[]> getValidMoves(String s, int x, int y, Piece p){
+        System.out.println(s);
         HashSet<int[]> validMoves = new HashSet<>();
         int i = 0;
         System.out.println("gVM");
@@ -30,8 +31,8 @@ public class MoveInterpreter {
         leap = false;
         hop = false;
 
-        int start = 1;
-        int end = 1;
+        start = 1;
+        end = 1;
         boolean intervalFound = false;
 
         
@@ -56,18 +57,20 @@ public class MoveInterpreter {
             }
             
             if(ch(s, i) == 'n'|| (s.substring(i, i+1)).matches("[0-9]")){
-
+                char c = '°';
+                /* 
                 if(ch(s, i) == 'n'){
                     start = 1;
                     end = Integer.MAX_VALUE;
                     if (ch(s, i-1) == '0') start = 0;
                     i++;
-                    intervalFound = true;
+                    //intervalFound = true;
                 }
-                else{
+                */
+                {
                     int at;
                     String[] sarr = s.substring(i).split("[^0-9]", 2);
-                    char c = s.charAt(i + (at = sarr[0].length()));
+                    c = s.charAt(i + (at = sarr[0].length()));
                     String[] sarr2 = s.substring(i + ++at).split("[^0-9]", 2);
 
                     stepA = 1;
@@ -76,14 +79,17 @@ public class MoveInterpreter {
                     boolean notActually = false;
 
                     switch(c){
+                        
                         case 'n':
                         continues = true;
-                        i+= sarr[0].length();
-                        notActually = true;
+                        //i+= sarr[0].length();
+                        if (ch(s, i) == '0') start = 0;
+                        end = 50;//int max
+                        intervalFound = true;
+                        i += at;
                         break;
-
+                        
                         case '/':
-                        System.out.println("/");
                         if(!intervalFound){start = 1; end = 1;}
 
                         stepA = Integer.parseInt(sarr[0]);
@@ -97,19 +103,28 @@ public class MoveInterpreter {
                         end = start;
                         if(sarr2[0] != "") end = Integer.parseInt(sarr2[0]);
                         i += at;
+                        c = ch(s, i);
+                        i += 1;
+                        intervalFound = true;
                         break;
 
                         default:
+                        if(sarr[0] != "") start = Integer.parseInt(sarr[0]);
+                        end = start;
+                        System.out.println(start);
                         System.out.println("def");
                         i += at;
                     }
-                    Iterator itr = new Iterator(p, s, c, ch(s, i), this);
-                    validMoves.addAll(itr.gimmeSet());//ale ja nechci AbstractCollection.add ale Set.add
-
                     if(!notActually) intervalFound = true;
 
                 }
-
+                //Iterator callllll
+                if("()".contains(""+c)){continues = true; continue;}
+                if(intervalFound){
+                    System.out.println("i = " + i);
+                    Iterator itr = new Iterator(p, s, c, ch(s, i), this, x, y);
+                    validMoves.addAll(itr.gimmeSet());//ale ja nechci AbstractCollection.add ale Set.add
+                }
             }
 
             if(ch(s, i) == '(' || ch(s, i) ==')'){i++; continues = true;}
@@ -184,4 +199,5 @@ public class MoveInterpreter {
         this.board = board;
     }
 }
+
 
