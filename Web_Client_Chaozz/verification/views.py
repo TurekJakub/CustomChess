@@ -19,25 +19,31 @@ def password_reset(request):
         return render(request, './performedactionstatus.html', context={'status':'Chyba!', 'message': f'Žádost o obnovení vašeho hesla se nepodařilo zpracovat. Chyba: {response}.'})
    # render reset password page on GET request
    return render(request, './verification/resetpassword.html') 
+
 def set_new_password(request,uid,token):
-     hasher = PBKDF2PasswordHasher()
-     id =urlsafe_base64_decode(uid)   
-     tokenHash = hasher.encode(password=token, salt=' ',iterations=3000)
-     try:
-       ChessUser.objects.get(id=id)
-     except:
-       pass
-     """ # test
-     t = Token(expiration=None,tokenHash='jdkjldkjgbkfsgk')
-     x = ChessUser(username='OwO',email='jxkjk@ggg.cz',id=12,tokens=[{'expiration':'2023-04-03','tokenHash':'jcjxkckxyjykx','_id':'6429df8d2827500ee3b9241d'}])
-     x.save()
-     c = ChessUser.objects.get(username='OwO')
-     print(c.tokens)
-     print(uid  + ' ' + str(id)) 
-     """
-     template = loader.get_template('./verification/newpassword.html')
-    
-     return HttpResponse(template.render())
+  hasher = PBKDF2PasswordHasher()
+  id =int(urlsafe_base64_decode(uid) )
+  print(id) 
+  tokenHash = hasher.encode(password=token, salt=' ',iterations=3000)
+  try:
+   user = ChessUser.objects.get(id=id)  
+   
+  except ChessUser.DoesNotExist:  
+   pass
+  print(token)
+  for tokenn in user.tokens:
+     if(tokenn['tokenHash'] == token.strip()):    
+        print('token found')       
+        render(request, './verification/newpassword.html')
+        if(request.method == 'POST'):
+           if(request.POST['password'] == request.POST['password2']):
+              user.password = make_password(request.POST['password'])
+              user.tokens.remove(token)
+              user.save()
+              return render(request, './verification/performedactionstatus.html', context={'status':'Úspěch!', 'message': 'Vaše heslo bylo úspěšně změněno. Nyní se můžete přihlásit pomocí nového hesla.'})
+           else:
+              return render(request, './verification/performedactionstatus.html', context={'status':'Chyba!', 'message': f'Zdá se, že se nejedná o validní požadavek o reset hesla.'})
+  return render(request, './verification/performedactionstatus.html', context={'status':'Chyba!', 'message': f'Zdá se, že se nejedná o validní požadavek o reset hesla.'})  
 def confirmation():
     pass
 def success(request):
