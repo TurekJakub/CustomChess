@@ -26,7 +26,7 @@ game_info = {
 
 @csrf_exempt
 def sign_in(request):     
-    connection = get_connection()      
+    #connection = get_connection()      
     if (request.method == 'POST'):
         form = sign_in_form(request.POST)
 

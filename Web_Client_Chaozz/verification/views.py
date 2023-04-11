@@ -1,12 +1,13 @@
 from django.shortcuts import render,HttpResponse
+from django.http import HttpResponseNotFound
 from django.template import loader
 from chess_test.connection import get_connection
 from .models import ChessUser, Token
 from django.contrib.auth.hashers import make_password
-from django.utils.http import urlsafe_base64_decode
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.contrib.auth.hashers import PBKDF2PasswordHasher
 def password_reset(request):  
    # handle client request to reset password on POST request
-   print(make_password(password='negr'))
    if(request.method == 'POST'):
      # get connection to server
      connection = get_connection()
@@ -19,7 +20,13 @@ def password_reset(request):
    # render reset password page on GET request
    return render(request, './verification/resetpassword.html') 
 def set_new_password(request,uid,token):
-     id =int(urlsafe_base64_decode(uid))
+     hasher = PBKDF2PasswordHasher()
+     id =urlsafe_base64_decode(uid)   
+     tokenHash = hasher.encode(password=token, salt=' ',iterations=3000)
+     try:
+       ChessUser.objects.get(id=id)
+     except:
+       pass
      """ # test
      t = Token(expiration=None,tokenHash='jdkjldkjgbkfsgk')
      x = ChessUser(username='OwO',email='jxkjk@ggg.cz',id=12,tokens=[{'expiration':'2023-04-03','tokenHash':'jcjxkckxyjykx','_id':'6429df8d2827500ee3b9241d'}])
