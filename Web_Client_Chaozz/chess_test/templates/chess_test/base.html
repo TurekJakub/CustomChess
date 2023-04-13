@@ -32,6 +32,7 @@
                 <button class="dropdown-item w-100 bg-dark navButton text-white">Log out</button>
                 {% else %}
                 <form class="w-75 ms-auto me-auto " method="post">
+                    {% csrf_token %}
                     <div class="form-group">
                         <label for="id_username">Uživatelské jmeno</label>
                         <input class="form-control" id="id_username" name="username">
@@ -55,7 +56,7 @@
     </nav>
     {% block body %}
      <div class="container-fluid d-flex align-items-center justify-content-center" style="height: calc(100vh - 90px);">
-        <div class="w-25 d-flex justify-content-center align-content-center bg-secondary rounded">
+        <div class=" d-flex justify-content-center align-content-center bg-secondary rounded">
             {% block body_content%}{%endblock body_content%}
             
         </div>
