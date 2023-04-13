@@ -18,40 +18,28 @@ let forward;
 let lastWidth;
 let switched = false;
 let img = new Image();
-
+const csrftoken = Cookies.get('csrftoken');
 
 // AJAX calls for data specified by requested parameter
-
-async function doAjaxCall(requested) {
-  let data;
+async function doAjaxCall(data) {
+  let response;
   await $.ajax({
     url: '',
+    headers: {'X-CSRFToken': csrftoken},
+    mode: 'same-origin',
     type: 'post',
-    data: {
-      requested: requested
-    },
+    data: data,
 
     success: function (response) {
-      data = response;
-      
+      response = response;      
     },
-
-
   });
-  return data;
+  return response;
 }
 // ajax call to send data to server
-async function sendMove(x, y) {
-  $.ajax({
-    url: '',
-    type: 'post',
-    data: {
-      requested: 'post-fig',
-      move: x + ':' + y,
-      figure: lastSelected,
-      transcript: 'none' // transcript is not implemented yet
-    },
-  });
+async function sendMove(x, y,transcript) {
+  data = { requested: 'post-fig', move: x + ':' + y, figure: lastSelected, transcript: transcript }
+  doAjaxCall(data);
 }
 // set path to game's temporary files directory
 function setPath(pathname) {
@@ -109,12 +97,12 @@ async function handleClickCanvas(event) {
   // getting figures and their possible moves
   if (figures === null) {
 
-    figures = await doAjaxCall('fig');
+    figures = await doAjaxCall({requested:'fig'});
 
   }
   if (positions === null) {
 
-    positions = await doAjaxCall('moves');
+    positions = await doAjaxCall({requested:'moves'});
   }
 
   for (let key in figures) {
@@ -131,7 +119,7 @@ async function handleClickCanvas(event) {
     }
     else if (selected && positions[lastSelected].includes((Math.floor(x / a) + 1) + ':' + (Math.floor(y / a) + 1))) { // user trigger movment of previously selected figure
       console.log(lastSelected + ' was moved at x: ' + x + ', y: ' + y);
-      sendMove((Math.floor(x / a) + 1), (Math.floor(y / a) + 1));
+      sendMove((Math.floor(x / a) + 1), (Math.floor(y / a) + 1),''); // TODO: add transcript
       unmarkMoves(document.getElementById('canvas-moves').getContext('2d'));
       console.log((Math.floor(y / a) + 1) + 'c' + (Math.floor(x / a) + 1))
       setAnimationCordinates(coordinates[0] - 1, coordinates[1] - 1, Math.floor(x / a), Math.floor(y / a))

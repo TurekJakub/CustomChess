@@ -7,6 +7,7 @@
 <body>
     {% block body_content %}
     <form id='form' class="w-75 " method="post" enctype="multipart/form-data">
+        {% csrf_token %}
         {%block form %}
         <h2 class=" mt-2">Přihlásit se</h2>
         <div class="form-group mt-2">
