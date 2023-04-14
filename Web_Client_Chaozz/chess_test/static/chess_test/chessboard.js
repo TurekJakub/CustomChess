@@ -21,7 +21,7 @@ let img = new Image();
 const csrftoken = Cookies.get('csrftoken');
 
 // AJAX calls for data specified by requested parameter
-async function doAjaxCall(data) {
+async function makeAjaxCall(data) {
   let response;
   await $.ajax({
     url: '',
@@ -39,7 +39,7 @@ async function doAjaxCall(data) {
 // ajax call to send data to server
 async function sendMove(x, y,transcript) {
   data = { requested: 'post-fig', move: x + ':' + y, figure: lastSelected, transcript: transcript }
-  doAjaxCall(data);
+  makeAjaxCall(data);
 }
 // set path to game's temporary files directory
 function setPath(pathname) {
@@ -97,12 +97,12 @@ async function handleClickCanvas(event) {
   // getting figures and their possible moves
   if (figures === null) {
 
-    figures = await doAjaxCall({requested:'fig'});
+    figures = await makeAjaxCall({requested:'fig'});
 
   }
   if (positions === null) {
 
-    positions = await doAjaxCall({requested:'moves'});
+    positions = await makeAjaxCall({requested:'moves'});
   }
 
   for (let key in figures) {
@@ -221,7 +221,7 @@ async function drawCanvas(heightParam, widthParam, figuresParam) {
   /*
   if (figures === null) {
 
-    figures = await doAjaxCall('fig');
+    figures = await makeAjaxCall('fig');
   }
   */
   figures = figuresParam;
