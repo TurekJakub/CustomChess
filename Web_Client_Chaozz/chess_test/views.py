@@ -1,4 +1,9 @@
-from django.shortcuts import render, HttpResponse, redirect
+from django.shortcuts import (
+    render,
+    HttpResponse,
+    redirect,
+    HttpResponsePermanentRedirect,
+)
 from django.http import HttpResponseForbidden
 from django.template import loader
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
@@ -13,6 +18,7 @@ from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.templatetags.static import static
 from .connection import get_connection
+from django.template.loader import render_to_string
 
 players_turn = True
 game_info = {
@@ -65,33 +71,38 @@ def sign_in(request):
     return render(request, "chess_test/index.html")
 
 
+@ensure_csrf_cookie
 def sign_up(request):
     # connection = get_connection()
     if request.method == "POST":
         form = sign_up_form(request.POST, request.FILES)
-        print(form)
+
         if form.is_valid():
             data = form.cleaned_data
-            connection.send_data(
-                f"signup:{data['username']}:{data['password']}:{data['email']}"
-            )
-            connection.send_file(data['image'])
-            response_status = connection.recieve_data().split(":")[1]            
-            if response_status[1] == "success":
-                return render(
-                    request,
-                    "verification/performedactionstatus.html",
-                    context={
+            if data["password"] == data["password_confirmation"]:
+                connection.send_data(
+                    f"signup:{data['username']}:{data['password']}:{data['email']}"
+                )
+                connection.send_file(data["image"])
+                response_status = connection.recieve_data().split(":")[1]
+                if response_status[1] == "success":
+                    request.session["context"] = {
                         "status": "Úspěch!",
                         "message": "Vaše registrace proběhla úspěšně, nyní už je jen potřeba jí potvrdit na adrese zaslané na Vámi uvedený email.",
-                    },
-                )
-            return render(
-                request, "chess_test/signup.html", context={"msg": response_status[1]}
-            )
-        form = sign_in_form()
-        return render(request, "chess_test/signup.html")
-    return render(request, "chess_test/signup.html")
+                    }
+                    return HttpResponsePermanentRedirect("/verification/result")
+                request.session["context"] = {"msg": response_status[1]}
+            else:
+                request.session["context"] = {"msg": "Hesla se neshodují."}
+        else:
+            request.session["context"] = {"msg": "Byly zadány neplatné údaje."}
+        return HttpResponsePermanentRedirect("/signup")
+    if "context" in request.session:
+        context = request.session["context"]
+        del request.session["context"]
+    else:
+        context = {}
+    return render(request, "chess_test/signup.html", context=context)
 
 
 @ensure_csrf_cookie

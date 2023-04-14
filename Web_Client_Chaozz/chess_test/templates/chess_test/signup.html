@@ -5,7 +5,6 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.css"
     integrity="sha512-C4k/QrN4udgZnXStNFS5osxdhVECWyhMsK1pnlk+LkC7yJGCqoYxW4mH3/ZXLweODyzolwdWSqmmadudSHMRLA=="
     crossorigin="anonymous" referrerpolicy="no-referrer" />
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"
     integrity="sha512-6lplKUSl86rUVprDIjiW8DuOniNX8UDoRATqZSds/7t6zCQZfaCe3e5zcGaQwxa8Kpn5RTM9Fvl3X2lLV4grPQ=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -13,32 +12,38 @@
 <script src="{% static 'chess_test/signup.js' %}"></script>
 {%endblock%}
 
-<body>
+<body{%block body_atributes%} onresize="resizeForm()"{%endblock%}>
     {%block form%}
     <h2 class=" mt-2">Zaregistrovat se</h2>
     <div class="form-group mt-2">
-        <label for="id_username">Uživatelské jmeno</label>
-        <input class="form-control" id="id_username" name="username">
+        <label for="username-input">Uživatelské jmeno</label>
+        <input class="form-control" id="username-input" name="username">
     </div>
     <div class="form-group mt-2">
-        <label for="id_password">Heslo</label>
-        <input type="password" class="form-control" id="id_password" name="password">
+        <label for="password-input">Heslo</label>
+        <input type="password" class="form-control" id="password-input" name="password">
+    </div>
+    <div class="form-group mt-2">
+        <label for="password-confirmation-input">Heslo</label>
+        <input type="password" class="form-control" id="password-confirmation-input" name="password_confirmation">
     </div>
     <div class="form-group">
-        <label for="id_email">Email</label>
-        <input class="form-control" id="id_email" name="email">
+        <label for="email-input">Email</label>
+        <input class="form-control" id="email-input" name="email">
     </div>
-    <div class="form-group">
+    <div class="form-group mt-2">
         <label for="pro">Profilový obrázek</label>
         <input type="file" class="form-control" id="image-input" name="image"  onchange="changeDisplayedImage()">
     </div>
-    <div id="cropper-container d-flex justify-content-center" class="form-group mt-2">
-        <img id="cropper-image" class="w-50 h-100 me-5" >
-    </div>
+   
+    <div id="cropper-container" class="form-group mt-2 rounded" >
+        <img id="cropper-image"  style=" max-width: 100%;" >
+    </div>    
     <div class="form-group">
-        <button id="button" class="form-control mb-3 mt-2 bg-success border-success btn btn-primary text-white" type="button" 
+        <button id="button" class="form-control mb-3 mt-2 bg-success border-success btn btn-primary text-white" type="button" onclick=" makeSignUpRequest()" 
         >Registrovat</button>
-    </div>       
+    </div> 
+    <p id="error-log" class="small text-danger  align-text-center">{{msg}}</p>
     {%endblock%}
     {% block profile_visibility%}{%endblock%}
 
