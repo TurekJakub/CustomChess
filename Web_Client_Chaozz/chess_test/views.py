@@ -40,7 +40,7 @@ game_info = {
 
 
 def sign_in(request):
-    connection = get_connection()
+    #connection = get_connection()
     if request.method == "POST":
         form = sign_in_form(request.POST)
 
@@ -112,23 +112,24 @@ def game(request):
     global players_turn
 
     # connect to server
-    connection = get_connection()
+    # connection = get_connection()
     # recieve information about game
-    initialize_game_information()
+    #initialize_game_information()
 
     # connection = get_connection()
     if players_turn:
         if request.headers.get("x-requested-with") == "XMLHttpRequest":
             if request.POST.get("requested") == "figures":
                 return JsonResponse(game_info["figures"])
-            elif request.POST.get("requested") == "moves":
-                """
+            elif request.POST.get("requested") == "moves":                
                 layer = get_channel_layer()
                 async_to_sync(layer.group_send)('events', {
                     'type': 'events_alarm',
-                    'content': '0:0:0:7'
-                })
-                """
+                    'cordinates': '2:2:2:3',
+                    'figure': 'pawn',
+                    'action': 'move',
+                })         
+                print(game_info["moves"])      
                 return JsonResponse(game_info["moves"])
             elif request.POST.get("requested") == "post-fig":
                 connection.send_data(
@@ -151,7 +152,10 @@ def game(request):
     else:
         return JsonResponse({"msg": "nejsi na tahu"})
     return render(request, "chess_test/chessboard.html", context=game_info)
-
+def create_game(request):
+    pass
+def join_game(request):
+    pass
 
 def initialize_game_information():
     global game_info
