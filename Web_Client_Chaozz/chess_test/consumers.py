@@ -19,19 +19,17 @@ class ChatConsumer(WebsocketConsumer):
             'events',
             self.channel_name
         )
-        
-    def receive(self, text):
+   
 
-        self.send('kdjjs')
-
-    def send_message(self, res):
-        """ Receive message from room group """
+    def send_message(self, event):      
         # Send message to WebSocket
         self.send(text_data=json.dumps({
-            "payload": res,
+            "cordinates": event['cordinates'],
+            "action": event['action'],
+            "figure": event['figure'],
         }))
-    def events_alarm(self, event):
-        print("UwU//")
-        self.send_message(event['content'])
+
+    def events_alarm(self, event):      
+        self.send_message(event)
        
   

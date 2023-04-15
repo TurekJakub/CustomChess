@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-{%extends "./index.html"%}
+{%extends "./base.html"%}
 {%block head%}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.css"
     integrity="sha512-C4k/QrN4udgZnXStNFS5osxdhVECWyhMsK1pnlk+LkC7yJGCqoYxW4mH3/ZXLweODyzolwdWSqmmadudSHMRLA=="
@@ -13,7 +13,9 @@
 {%endblock%}
 
 <body{%block body_atributes%} onresize="resizeForm()"{%endblock%}>
-    {%block form%}
+    {%block body_content%}
+    <form id='form' class="w-75 " method="post" enctype="multipart/form-data">
+        {% csrf_token %}
     <h2 class=" mt-2">Zaregistrovat se</h2>
     <div class="form-group mt-2">
         <label for="username-input">Uživatelské jmeno</label>
@@ -44,6 +46,7 @@
         >Registrovat</button>
     </div> 
     <p id="error-log" class="small text-danger  align-text-center">{{msg}}</p>
+</form>  
     {%endblock%}
     {% block profile_visibility%}{%endblock%}
 

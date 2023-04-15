@@ -22,22 +22,22 @@ const csrftoken = Cookies.get('csrftoken');
 
 // AJAX calls for data specified by requested parameter
 async function makeAjaxCall(data) {
-  let response;
+  let responseData;
   await $.ajax({
     url: '',
-    headers: {'X-CSRFToken': csrftoken},
+    headers: { 'X-CSRFToken': csrftoken },
     mode: 'same-origin',
     type: 'post',
     data: data,
 
     success: function (response) {
-      response = response;      
+      responseData = response;
     },
   });
-  return response;
+  return responseData;
 }
 // ajax call to send data to server
-async function sendMove(x, y,transcript) {
+async function sendMove(x, y, transcript) {
   data = { requested: 'post-fig', move: x + ':' + y, figure: lastSelected, transcript: transcript }
   makeAjaxCall(data);
 }
@@ -97,12 +97,11 @@ async function handleClickCanvas(event) {
   // getting figures and their possible moves
   if (figures === null) {
 
-    figures = await makeAjaxCall({requested:'fig'});
+    figures = await makeAjaxCall({ requested: 'fig' });
 
   }
   if (positions === null) {
-
-    positions = await makeAjaxCall({requested:'moves'});
+    positions = await makeAjaxCall({ requested: 'moves' });
   }
 
   for (let key in figures) {
@@ -119,10 +118,10 @@ async function handleClickCanvas(event) {
     }
     else if (selected && positions[lastSelected].includes((Math.floor(x / a) + 1) + ':' + (Math.floor(y / a) + 1))) { // user trigger movment of previously selected figure
       console.log(lastSelected + ' was moved at x: ' + x + ', y: ' + y);
-      sendMove((Math.floor(x / a) + 1), (Math.floor(y / a) + 1),''); // TODO: add transcript
+      sendMove((Math.floor(x / a) + 1), (Math.floor(y / a) + 1), ''); // TODO: add transcript
       unmarkMoves(document.getElementById('canvas-moves').getContext('2d'));
       console.log((Math.floor(y / a) + 1) + 'c' + (Math.floor(x / a) + 1))
-      setAnimationCordinates(coordinates[0] - 1, coordinates[1] - 1, Math.floor(x / a), Math.floor(y / a))
+      setAnimationCordinates(coordinates[0] - 1, coordinates[1] - 1, Math.floor(x / a), Math.floor(y / a),lastSelected)
       window.requestAnimationFrame(drawAnimationFrame);
       selected = false;
     }
@@ -224,6 +223,7 @@ async function drawCanvas(heightParam, widthParam, figuresParam) {
     figures = await makeAjaxCall('fig');
   }
   */
+  console.log(figuresParam)
   figures = figuresParam;
   resizeAllLayers();
   drawChessboard(height, width);
@@ -234,13 +234,13 @@ async function drawCanvas(heightParam, widthParam, figuresParam) {
 }
 
 // setter for cordinates of start and end of a moving figure's animation
-function setAnimationCordinates(startX, startY, endX, endY) {
+function setAnimationCordinates(startX, startY, endX, endY,figure) {
   newXCordinate = startX * a;
   newYCordinate = startY * a
   endXCordinate = endX * a;
   endYCordinate = endY * a;
   lineEquationA = endYCordinate - newYCordinate;
-  img.src = path + '/' + lastSelected + '.svg';
+  img.src = path + '/' + figure + '.svg';
   b = -1 * (endXCordinate - newXCordinate);
   c = -1 * (lineEquationA * newXCordinate + b * newYCordinate)
 
@@ -249,6 +249,7 @@ function setAnimationCordinates(startX, startY, endX, endY) {
 }
 // draw one frame of moving animation
 function drawAnimationFrame() {
+  console.log('drawAnimationFrame')
   ctx = document.getElementById('canvas-animations').getContext('2d');
 
   if (lineEquationA == 0) {
@@ -278,10 +279,10 @@ function drawAnimationFrame() {
     newYCordinate = Math.abs((-1 * lineEquationA * newXCordinate - c) / b);
     console.log(newXCordinate + ' ' + newYCordinate)
   }
-  
+
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
   ctx.drawImage(img, newXCordinate, newYCordinate, a, a);
-  
+
 
   if ((newYCordinate < endYCordinate || newXCordinate < endXCordinate && forward) || newYCordinate > endYCordinate && newXCordinate > endXCordinate && !forward) {
     window.requestAnimationFrame(drawAnimationFrame) // recusive call for the next animation frame
@@ -293,5 +294,52 @@ function drawAnimationFrame() {
 
   }
 
+}
+function openWebSocketConnection() {
+  // open websocket connection
+  let ws = new WebSocket('ws://' + window.location.host + '/ws/game/');
+  // if websocket connection is closed it is try to by open again
+  ws.onclose = function () {
+    console.log('websocket connection closed');
+    openWebSocketConnection();
+  };
+  // called whatever data are received via websocket and handle them
+  ws.onmessage = function (event) {  
+    // fetch data from received message
+    data = JSON.parse(event.data);
+    // draw animation of other player's move if action is 'move'
+    if (data['action'] == 'move') {
+      cordinates = data['cordinates'].split(':');     
+      lastSelected = data['figure'];
+      setAnimationCordinates(cordinates[0], cordinates[1], cordinates[2], cordinates[3], data['figure']);      
+      window.requestAnimationFrame(drawAnimationFrame)  
+    }
+    // add new player to the list of active players if action is 'join'
+    else if (data['action'] == 'join') {
+      username = data['username'];
+      if($(window).width() < 576){
+        container = $('#container-bottom')
+      }
+      else{
+        container = $('#container-top')
+      }
+
+      playerCardDiv = document.createElement('div')
+      playerCardDiv.classList.add('w-100 mt-2 d-flex align-items-center bg-dark rounded border border-light')
+      profilePicture = document.createElement('img')
+      profilePicture.classList.add(' rounded me-2 mt-1 ms-1 mb-1 d-flex align-items-center selectDisable')
+      profilePicture.src = "{% static 'temp' %}/${username}_picture.jpge"
+      profilePicture.style = 'width: 40px; height: 40px;'
+      userNameLabel = document.createElement('label')
+      userNameLabel.classList.add('ms-auto me-2 selectDisable nameLabel')
+      userNameLabel.innerHTML = username
+
+      playerCardDiv.appendChild(profilePicture)
+      playerCardDiv.appendChild(userNameLabel)
+      container.appendChild(playerCardDiv)
+     
+      
+    }
+  };
 }
 
