@@ -5,6 +5,7 @@ from django.shortcuts import (
     HttpResponsePermanentRedirect,
 )
 from django.http import HttpResponseForbidden
+from django.urls import reverse
 from django.template import loader
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.http import JsonResponse
@@ -14,12 +15,13 @@ from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from .forms import sign_up_form, sign_in_form
 from django.contrib.auth.models import User
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.templatetags.static import static
 from .connection import get_connection
 from django.template.loader import render_to_string
 
+signed_in = False
 players_turn = True
 game_info = {
     "height": -1,  # height of board
@@ -30,22 +32,23 @@ game_info = {
     "figures": {
         "pawn": [2, 1]
     },  # positions of figures, format: {'figure_name': [x,y], ...}
-    "perma_tags": [
-        []
-    ],  # positions of tags that are not removed after turn, format: [[tag_name, x, y], ...]
-    "tags": [
-        ["red", 1, 2]
-    ],  # positions of tags that are removed after turn, format: [[tag_name, x, y], ...]
+    "tags": {
+        "2:1": [{'color':'blue', 'name':'unavailable'}]
+       
+    },  # positions of tags that are not removed after turn, format: {'x:y': [tag1, tag2, ...], ...}
+   
 }
 
 
 def sign_in(request):
-    #connection = get_connection()
+    global signed_in
+    # connection = get_connection()
     if request.method == "POST":
         form = sign_in_form(request.POST)
 
         if form.is_valid():
             data = form.cleaned_data
+            print(request.POST)
             connection.send_data(f"signin:{data['username']}:{data['password']}")
             file_name = connection.recieve_file()
             response_status = connection.recieve_data().split(":")[1]
@@ -54,11 +57,12 @@ def sign_in(request):
                     username=data["username"], password=data["password"]
                 )
                 login(request, user)
+                signed_in = True
                 return render(
                     request,
                     "chess_test/index.html",
                     context={
-                        "signin": True,
+                        "signin": signed_in,
                         "username": data["username"],
                         "profile_picture": f"/{file_name}",
                     },
@@ -66,9 +70,10 @@ def sign_in(request):
             return render(
                 request,
                 "chess_test/index.html",
-                context={"msg": "Neplatné přihlašovací údaje"},
+                context={"msg": "Neplatné přihlašovací údaje", "signin": signed_in},
             )
-    return render(request, "chess_test/index.html")
+    print(signed_in)
+    return render(request, "chess_test/index.html", context={"signin": signed_in})
 
 
 @ensure_csrf_cookie
@@ -114,22 +119,25 @@ def game(request):
     # connect to server
     # connection = get_connection()
     # recieve information about game
-    #initialize_game_information()
+    # initialize_game_information()
 
     # connection = get_connection()
     if players_turn:
         if request.headers.get("x-requested-with") == "XMLHttpRequest":
             if request.POST.get("requested") == "figures":
                 return JsonResponse(game_info["figures"])
-            elif request.POST.get("requested") == "moves":                
+            elif request.POST.get("requested") == "moves":
                 layer = get_channel_layer()
-                async_to_sync(layer.group_send)('events', {
-                    'type': 'events_alarm',
-                    'cordinates': '2:2:2:3',
-                    'figure': 'pawn',
-                    'action': 'move',
-                })         
-                print(game_info["moves"])      
+                async_to_sync(layer.group_send)(
+                    "events",
+                    {
+                        "type": "events_alarm",
+                        "cordinates": "2:2:2:3",
+                        "figure": "pawn",
+                        "action": "move",
+                    },
+                )
+                print(game_info["moves"])
                 return JsonResponse(game_info["moves"])
             elif request.POST.get("requested") == "post-fig":
                 connection.send_data(
@@ -152,10 +160,22 @@ def game(request):
     else:
         return JsonResponse({"msg": "nejsi na tahu"})
     return render(request, "chess_test/chessboard.html", context=game_info)
+
+
+def log_out(request):
+    global signed_in
+    logout(request)
+    signed_in = False
+    return HttpResponsePermanentRedirect(reverse("logout"))
+
+
 def create_game(request):
     pass
+
+
 def join_game(request):
     pass
+
 
 def initialize_game_information():
     global game_info

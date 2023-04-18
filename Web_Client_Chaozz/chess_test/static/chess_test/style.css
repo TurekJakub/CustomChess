@@ -1,37 +1,49 @@
-
-.floatLabel{
+.floatLabel {
     text-align: center;
 }
-h2{
-    color:whitesmoke;
+
+h2 {
+    color: whitesmoke;
     size: 10mm;
     text-align: center;
 }
-h1{
+
+h3 {
+    color: whitesmoke;
+    font-size: 20px;
+    text-align: center;
+}
+
+h1 {
     color: whitesmoke;
     text-align: center;
     size: 50px;
 }
-.backgroundImage{
-    background-image: url("background.png");   
-    background-size: cover;    
+
+.backgroundImage {
+    background-image: url("background.png");
+    background-size: cover;
     background-position: center;
     height: 100vh;
-     
+
 }
-.mainMenu{
-    height: 250px; 
+
+.mainMenu {
+    height: 250px;
     border: 1px;
     border-color: brown;
 }
-h2{
-    color:whitesmoke;
+
+h2 {
+    color: whitesmoke;
     size: 10mm;
     text-align: center;
 }
-table{
+
+table {
     border-collapse: collapse;
 }
+
 .selectDisable {
     -webkit-user-select: none;
     -khtml-user-select: none;
@@ -39,18 +51,18 @@ table{
     -o-user-select: none;
     user-select: none;
 }
-.profileImg{
-    
-}
-.nameLabel{
+
+.profileImg {}
+
+.nameLabel {
     text-align: center;
     color: whitesmoke;
     text-overflow: ellipsis;
     white-space: nowrap;
-     overflow: hidden;
+    overflow: hidden;
 }
 
-.navButton{
+.navButton {
     height: 50px;
     width: 200px;
 }
