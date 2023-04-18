@@ -16,6 +16,7 @@ let b;
 let c
 let forward;
 let lastWidth;
+let displayedTags = {}
 let switched = false;
 let img = new Image();
 const csrftoken = Cookies.get('csrftoken');
@@ -121,7 +122,7 @@ async function handleClickCanvas(event) {
       sendMove((Math.floor(x / a) + 1), (Math.floor(y / a) + 1), ''); // TODO: add transcript
       unmarkMoves(document.getElementById('canvas-moves').getContext('2d'));
       console.log((Math.floor(y / a) + 1) + 'c' + (Math.floor(x / a) + 1))
-      setAnimationCordinates(coordinates[0] - 1, coordinates[1] - 1, Math.floor(x / a), Math.floor(y / a),lastSelected)
+      setAnimationCordinates(coordinates[0] - 1, coordinates[1] - 1, Math.floor(x / a), Math.floor(y / a), lastSelected)
       window.requestAnimationFrame(drawAnimationFrame);
       selected = false;
     }
@@ -211,7 +212,7 @@ function adjustPageLayout() {
 }
 // redraw chessboard usually at a new scale
 function redrawCanvas() {
-  drawCanvas(height, width, figures)
+  drawCanvas(height, width, figures,tags)
 }
 // draw whole chessboard
 async function drawCanvas(heightParam, widthParam, figuresParam) {
@@ -234,7 +235,7 @@ async function drawCanvas(heightParam, widthParam, figuresParam) {
 }
 
 // setter for cordinates of start and end of a moving figure's animation
-function setAnimationCordinates(startX, startY, endX, endY,figure) {
+function setAnimationCordinates(startX, startY, endX, endY, figure) {
   newXCordinate = startX * a;
   newYCordinate = startY * a
   endXCordinate = endX * a;
@@ -304,42 +305,72 @@ function openWebSocketConnection() {
     openWebSocketConnection();
   };
   // called whatever data are received via websocket and handle them
-  ws.onmessage = function (event) {  
+  ws.onmessage = function (event) {
     // fetch data from received message
     data = JSON.parse(event.data);
     // draw animation of other player's move if action is 'move'
     if (data['action'] == 'move') {
-      cordinates = data['cordinates'].split(':');     
+      cordinates = data['cordinates'].split(':');
       lastSelected = data['figure'];
-      setAnimationCordinates(cordinates[0], cordinates[1], cordinates[2], cordinates[3], data['figure']);      
-      window.requestAnimationFrame(drawAnimationFrame)  
+      setAnimationCordinates(cordinates[0], cordinates[1], cordinates[2], cordinates[3], data['figure']);
+      window.requestAnimationFrame(drawAnimationFrame)
     }
     // add new player to the list of active players if action is 'join'
     else if (data['action'] == 'join') {
       username = data['username'];
-      if($(window).width() < 576){
-        container = $('#container-bottom')
-      }
-      else{
-        container = $('#container-top')
-      }
-
-      playerCardDiv = document.createElement('div')
-      playerCardDiv.classList.add('w-100 mt-2 d-flex align-items-center bg-dark rounded border border-light')
-      profilePicture = document.createElement('img')
-      profilePicture.classList.add(' rounded me-2 mt-1 ms-1 mb-1 d-flex align-items-center selectDisable')
-      profilePicture.src = "{% static 'temp' %}/${username}_picture.jpge"
-      profilePicture.style = 'width: 40px; height: 40px;'
-      userNameLabel = document.createElement('label')
-      userNameLabel.classList.add('ms-auto me-2 selectDisable nameLabel')
-      userNameLabel.innerHTML = username
-
-      playerCardDiv.appendChild(profilePicture)
-      playerCardDiv.appendChild(userNameLabel)
-      container.appendChild(playerCardDiv)
-     
-      
+      container = $('#list-players')
+      playerCard = document.getElementById('player-card-template').content.cloneNode(true).children[0]
+      playerCard.children[0].src = "{% static 'temp' %}/${username}_picture.jpge"
+      playerCard.children[1].innerHTML = username
+      container.append(playerCard)
     }
   };
 }
+function drawTags(context, tagsList) {
+  let tagsNames = []
+  let tagColors = [];
+  for ([field, tags] of Object.entries(tagsList)) {
+    tagSize = (a / tags.length) - tags.length + 1;
+    i = 0;
+    x = field.split(':')[0];
+    y = field.split(':')[1];
+    console.log(tags)
+    for (tag of tags) {
 
+      if (tag['name'] != 'unavailable') {
+        context.fillStyle = tag['color'];
+        context.fillRect(x * a + i * tagSize + 1, y * a, tagSize, tagSize);
+        i++;
+      }
+      else {
+        context.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        context.fillRect(x * a, y * a, a, a);
+        i++;
+      }
+      tagsNames.push(tag['name'])
+      tagColors.push(tag['color'])
+    }
+
+  }
+  let displayedTagsNames = Object.keys(displayedTags)  
+  addTagsToLegend(tagsNames.filter(x => !displayedTagsNames.includes(x)), tagColors);
+  removeUnnecessaryTags(displayedTagsNames.filter(x => !tagsNames.includes(x)));
+
+}
+function addTagsToLegend(tagsToDisplay, tagsColors) {
+  tagsLegend = document.getElementById('legend-tags');
+  for (tagName of tagsToDisplay) {
+    tagCard = document.getElementById('tag-entry-template').content.cloneNode(true).children[0]
+    tagCard.children[0].style.backgroundColor = tagsColors[tagsToDisplay.indexOf(tagName)]
+    tagCard.children[1].innerHTML = tagName
+    tagsLegend.append(tagCard);
+    displayedTags[tag['name']] = tagCard;
+  }
+}
+
+function removeUnnecessaryTags(tagsToRemove) {
+  tagsLegend = document.getElementById('legend-tags');
+  for (tag of tagsToRemove) {
+    tagsLegend.removeChild(displayedTags[tag]);
+  }
+}

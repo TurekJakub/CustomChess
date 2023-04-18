@@ -1,31 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 {%extends './base.html'%}
+
 <head>
-    {%block head%} 
+    {%block head%}
     {%load static%}
-    <link href="{% static 'chess_test/style.css' %}" rel="stylesheet">   
-    <script src="{% static 'chess_test/chessboard.js' %}"></script>   
+    <link href="{% static 'chess_test/style.css' %}" rel="stylesheet">
+    <script src="{% static 'chess_test/chessboard.js' %}"></script>
     <script>setPath("{% static 'temp' %}")</script>
     {%endblock%}
-   
+
 </head>
 
-<body {%block body_atributes%}onresize="redrawCanvas()"{%endblock%}> 
+<body {%block body_atributes%}onresize="redrawCanvas()" {%endblock%}>
     {%block body%}
     <script>
-       {# drawCanvas({{height}}, {{width}}, {{figures|safe}}); production code #} 
-       $( document ).ready(function() {
-           drawCanvas(15, 8, {{figures|safe}});
-           initializ();
-           openWebSocketConnection();
+        {# drawCanvas({{ height }}, { { width } }, { { figures | safe } }); production code #}
+        $(document).ready(function () {
+            drawCanvas(15, 8, {{ figures| safe}}, {{ tags| safe}}, {{ perma_tags| safe}});
+        initializ();
+        openWebSocketConnection();
+       
        });
-      {# drawCanvas(8, 8, {{figures|safe}}); {# for testing purposes only #}
+        {%comment%} drawCanvas(8, 8, {{ figures| safe}}); {# for testing purposes only # } {%endcomment%}
+       
+      
+      
     </script>
-   <div class="container-fluid main_container d-flex ">
-        <div class=" row flex-fill align-items-top justify-content-top" style="height: calc(100vh - 80px);">          
-            <div id="column-1"class="col-sm-10 no-gutters d-flex align-top">
-                <div id="chessboard" class="w-100 justify-content-center mt-2 d-flex align-items-top" style="position: relative;" >
+    <div class="container-fluid main_container d-flex ">
+        <div class=" row flex-fill align-items-top justify-content-top" style="height: calc(100vh - 80px);">
+            <div id="column-1" class="col-sm-10 no-gutters d-flex align-top">
+                <div id="chessboard" class="w-100 justify-content-center mt-2 d-flex align-items-top"
+                    style="position: relative;">
                     <canvas id="canvas-background" class="rounded" style="position: absolute; z-index: 0"></canvas>
                     <canvas id="canvas-figures" style="position: absolute; z-index: 1"></canvas>
                     <canvas id="canvas-moves" style="position: absolute; z-index: 2"></canvas>
@@ -35,58 +41,54 @@
             </div>
             <div class="col-sm-2 no-gutters d-flex flex-column  mx-0" id="display">
                 <div id="container-top" class="mt-2 ">
-                    <div class="w-100 mt-2 d-flex align-items-center bg-dark rounded border border-light">
-                        <img class="  rounded me-2 mt-1 ms-1 mb-1 d-flex align-items-center selectDisable " src="{% static 'temp' %}/pawn.svg"
-                            alt="" style="height: 40px; width: 40px;">
-                            <label class=" ms-auto me-2 selectDisable nameLabel" >UwU</label>
+                    <div id="list-players">
+                        <template id="player-card-template">
+                            <div class="w-100 mt-2 d-flex align-items-center bg-dark rounded border border-light">
+                                <img class="  rounded me-2 mt-1 ms-1 mb-1 d-flex align-items-center selectDisable "  style="height: 40px; width: 40px;">
+                                <label class=" ms-auto me-2 selectDisable nameLabel"></label>
+                            </div>
+                        </template>
                     </div>
                 </div>
-              
-            <div id="container-bottom" class="mt-auto mb-2 ">
-                <div class=" bg-success mt-2" style="height=12.5%">
-                    <ul id="toggler" class="list-group h-50 bg-dark border border-light">
-                        <li class="list-group-item bg-dark border-0 text-light" style="cursor: pointer;" onclick="console.log('UwU')">První toggle</li>
-                      </ul>
+
+                <div id="container-bottom" class="mt-auto mb-2 d-flex flex-column h-50 mb-0 ">
+                    <div id="selector-toggle" class="mt-2 overflow-auto rounded border border-light h-50 bg-dark"
+                        style="max-height: 50%; height:31%">
+                        <h3 class="selectDisable">Výběr přepisu-zobrazení</h3>
+                        <template id="selector-item-template">
+                            <div class="bg-dark selectDisable border-top border-bottom border-light text-light"
+                                style="cursor: pointer;" onclick="console.log('UwU')"></div>
+                        </template>
+
+                    </div>
+                    <div id="selector-transcript"
+                        class="mt-2 w-100 overflow-auto rounded border border-light h-50 bg-dark"
+                        style="max-height: 50%; height:31%">
+                        <h3 class="selectDisable">Výběr přepisu-pohyb</h3>
+
+
+                    </div>
+                    <div id="legend-tags" class="mt-2 overflow-auto rounded border border-light h-50 bg-dark"
+                        style="max-height: 50%; height:31%">
+                        <h3 class="selectDisable">Legenda tagů</h3>
+                        <template id="tag-entry-template">
+                            <div class="selectDisable bg-dark pe-1 d-flex align-items-center border-top border-bottom border-light text-light"
+                                style="cursor: pointer;" onclick="console.log('UwU')">
+                                <div class="rounded ms-1 me-1" style="width: 20px;height: 20px;"></div>
+                                <label class=" ms-auto me-2 selectDisable nameLabel"></label>
+                            </div>
+                        </template>
+                       
+                    </div>
+                    </div>
+
                 </div>
-                <div class=" mt-2 bg-success" style="height=12.5%">
-                    <ul id="toggler" class="list-group h-50 bg-dark border border-light">
-                        <li class="list-group-item bg-dark text-light" style="cursor: pointer;" onclick="console.log('UwU')">První toggle</li>
-                      </ul>
-                </div>
-            </div>
-                
+
+
             </div>
         </div>
     </div>
-   {% comment %} for testing purposes only
-    <script>
-        const chatSocket = new WebSocket(
-            'ws://'
-            + window.location.host
-            + '/ws/game/'
-
-        );
-        chatSocket.onopen = function (e) {
-            console.log('UwU from WebSocket');
-        };
-        chatSocket.onmessage = function (e) {
-
-            console.log(e);
-            let cordinates = JSON.parse(e.data).payload.split(':');
-            console.log(cordinates);
-            setAnimationCordinates(cordinates[0], cordinates[1], cordinates[2], cordinates[3]);
-            drawAnimationFrame();
-
-            let x = document.getElementById('display_1')
-            let y = document.createElement('div')
-            y.setAttribute('class', 'h-25 bg-secondary w-100 rounded')
-            let yy = document.createElement('div')
-            let yyy = document.createElement('div')
-
-            x.appendChild(y)
-        };
-    </script>
-   {% endcomment %}
     {%endblock%}
 </body>
+
 </html>
