@@ -18,7 +18,11 @@ let forward;
 let lastWidth;
 let displayedTags = {}
 let switched = false;
-let img = new Image();
+let firstFrame
+let figuresMap = {}
+let animationImg
+let tags = {}
+let permanentTags = {}
 const csrftoken = Cookies.get('csrftoken');
 
 // AJAX calls for data specified by requested parameter
@@ -77,8 +81,14 @@ function getNewSquerSize() {
   console.log($(window).width() + ':' + $(window).height() + ':' + a)
 
 }
-function initializ() {
+function initializ(heightParam, widthParam, figuresParam, tagsParam, permanentTagsParam, figuresMapParam) {
   lastWidth = $(window).width()
+  height = heightParam;
+  width = widthParam;
+  figuresMap = figuresMapParam;
+  figures = figuresParam;
+  tags = tagsParam;
+  permanentTags = permanentTagsParam;
 }
 // resize given canvas to half of current window size or to screen width on small mobile dievices
 function resizeCanvas(canvas) {
@@ -104,18 +114,19 @@ async function handleClickCanvas(event) {
   if (positions === null) {
     positions = await makeAjaxCall({ requested: 'moves' });
   }
-
+  document.getElementById('canvas-moves').getContext('2d').fillRect(0, a, a,  a)
   for (let key in figures) {
     let coordinates = figures[key];
     if (inRange(x, coordinates[0] - 1) && inRange(y, coordinates[1] - 1)) { // user selected new figure
       if (selected) {
         unmarkMoves(document.getElementById('canvas-moves').getContext('2d'));
       }
-      console.log(positions)
+      console.log(key)
       moves = positions[key];
       markMoves(moves, document.getElementById('canvas-moves').getContext('2d'));
       lastSelected = key;
       selected = true;
+     
     }
     else if (selected && positions[lastSelected].includes((Math.floor(x / a) + 1) + ':' + (Math.floor(y / a) + 1))) { // user trigger movment of previously selected figure
       console.log(lastSelected + ' was moved at x: ' + x + ', y: ' + y);
@@ -127,7 +138,11 @@ async function handleClickCanvas(event) {
       selected = false;
     }
     else { // user click on empty field
+      console.log(key)
+      console.log(positions[lastSelected])
+      console.log((Math.floor(x / a) + 1) + ':' + (Math.floor(y / a) + 1))
       unmarkMoves(document.getElementById('canvas-moves').getContext('2d'));
+      console.log('empty field')
       selected = false
     }
   }
@@ -137,8 +152,10 @@ function inRange(value, rangeBorder) {
 }
 // mark possible actions of selected figure
 function markMoves(moves, ctx) {
+  console.log(moves)
   for (let i = 0; i < moves.length; i++) {
     let move = moves[i].split(':');
+    
     ctx.beginPath();
     ctx.arc(move[0] * a - a / 2, move[1] * a - a / 2, a / 4, 0, 2 * Math.PI);
     ctx.fillStyle = 'red';
@@ -147,13 +164,28 @@ function markMoves(moves, ctx) {
   }
   ctx = document.getElementById('canvas-figures').getContext('2d');
 }
+var onloadFunc = function (img,ctx, x, y) {
+ 
+  return function () {
+    ctx.drawImage(img, x, y, a, a);
+    
+  }
+};
 // draw figures on canvas
 function drawFigures(figure, ctx) {
   for (const [figur, position] of Object.entries(figure)) {
+    let figurName = figur // debug something like 'let figurName = figur.split('separator')[0];' in production
+    img = new Image();
+    /*
     img.onload = function () {
-      ctx.drawImage(img, (position[0] - 1) * a, (position[1] - 1) * a, a, a);
-    };
-    img.src = path + '/' + figur + '.svg';
+      ctx.drawImage(img, (position[0] - 1) * a, (position[1] - 1) * a, a, a);             
+    };  
+    */
+    img.onload = onloadFunc(img, ctx, (position[0] - 1) * a, (position[1] - 1) * a)
+    img.src = path + '/' + figuresMap[figurName];
+
+
+
   }
 
 }
@@ -210,28 +242,12 @@ function adjustPageLayout() {
 
 
 }
-// redraw chessboard usually at a new scale
-function redrawCanvas() {
-  drawCanvas(height, width, figures,tags)
-}
 // draw whole chessboard
-async function drawCanvas(heightParam, widthParam, figuresParam) {
-  height = heightParam;
-  width = widthParam;
-  /*
-  if (figures === null) {
-
-    figures = await makeAjaxCall('fig');
-  }
-  */
-  console.log(figuresParam)
-  figures = figuresParam;
+function drawCanvas() {
   resizeAllLayers();
   drawChessboard(height, width);
-  console.log(figures)
   drawFigures(figures, document.getElementById('canvas-figures').getContext('2d'));
   markMoves(moves, document.getElementById('canvas-moves').getContext('2d'));
-
 }
 
 // setter for cordinates of start and end of a moving figure's animation
@@ -241,18 +257,22 @@ function setAnimationCordinates(startX, startY, endX, endY, figure) {
   endXCordinate = endX * a;
   endYCordinate = endY * a;
   lineEquationA = endYCordinate - newYCordinate;
-  img.src = path + '/' + figure + '.svg';
+  animationImg = new Image();
+  animationImg.src = path + '/' + figuresMap[figure]; // figur.split('separator')[0];' in production
   b = -1 * (endXCordinate - newXCordinate);
   c = -1 * (lineEquationA * newXCordinate + b * newYCordinate)
+  firstFrame = true;
 
-  console.log(newXCordinate + ' ' + newYCordinate)
-  console.log(endXCordinate + ' ' + endYCordinate)
 }
 // draw one frame of moving animation
 function drawAnimationFrame() {
-  console.log('drawAnimationFrame')
   ctx = document.getElementById('canvas-animations').getContext('2d');
 
+  if (firstFrame) {
+    console.log('first frame')
+    document.getElementById('canvas-figures').getContext('2d').clearRect(newXCordinate, newYCordinate, a, a);
+    firstFrame = false;
+  }
   if (lineEquationA == 0) {
     forward = endXCordinate > newXCordinate;
     if (forward) {
@@ -282,7 +302,7 @@ function drawAnimationFrame() {
   }
 
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
-  ctx.drawImage(img, newXCordinate, newYCordinate, a, a);
+  ctx.drawImage(animationImg, newXCordinate, newYCordinate, a, a);
 
 
   if ((newYCordinate < endYCordinate || newXCordinate < endXCordinate && forward) || newYCordinate > endYCordinate && newXCordinate > endXCordinate && !forward) {
@@ -291,7 +311,7 @@ function drawAnimationFrame() {
   else { // if animation ends figure is draw at it's finall position    
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height)
     ctx = document.getElementById('canvas-figures').getContext('2d')
-    ctx.drawImage(img, newXCordinate, newYCordinate, a, a);
+    ctx.drawImage(animationImg, newXCordinate, newYCordinate, a, a);
 
   }
 
@@ -352,7 +372,7 @@ function drawTags(context, tagsList) {
     }
 
   }
-  let displayedTagsNames = Object.keys(displayedTags)  
+  let displayedTagsNames = Object.keys(displayedTags)
   addTagsToLegend(tagsNames.filter(x => !displayedTagsNames.includes(x)), tagColors);
   removeUnnecessaryTags(displayedTagsNames.filter(x => !tagsNames.includes(x)));
 

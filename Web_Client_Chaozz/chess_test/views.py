@@ -27,16 +27,19 @@ game_info = {
     "height": -1,  # height of board
     "width": -1,  # width of board
     "moves": {
-        "pawn": ["2:2", "2:3"]
+        "pawn": ["2:2", "2:3"],
+        "test": ["1:1", "1:2"]
     },  # moves of figures, format: {'figure_name': [move1, move2, ...], ...}
     "figures": {
-        "pawn": [2, 1]
+        "pawn": [2, 1],
+        "test": [1, 1],
+      
     },  # positions of figures, format: {'figure_name': [x,y], ...}
-    "tags": {
-        "2:1": [{'color':'blue', 'name':'unavailable'}]
-       
+    "perma_tags": {
+        "2:1": [{"color": "blue", "name": "unavailable"}]
     },  # positions of tags that are not removed after turn, format: {'x:y': [tag1, tag2, ...], ...}
-   
+    "tags": {"2:1": [{"color": "blue", "name": "unavailable"}]},
+    "figures_map": {"pawn": "pawn.svg", "test":"pawn.svg", "pawn2": "pawn.svg"},
 }
 
 
@@ -124,9 +127,11 @@ def game(request):
     # connection = get_connection()
     if players_turn:
         if request.headers.get("x-requested-with") == "XMLHttpRequest":
+            print(request.POST)
             if request.POST.get("requested") == "figures":
                 return JsonResponse(game_info["figures"])
             elif request.POST.get("requested") == "moves":
+                """
                 layer = get_channel_layer()
                 async_to_sync(layer.group_send)(
                     "events",
@@ -137,6 +142,7 @@ def game(request):
                         "action": "move",
                     },
                 )
+                """
                 print(game_info["moves"])
                 return JsonResponse(game_info["moves"])
             elif request.POST.get("requested") == "post-fig":
@@ -166,7 +172,7 @@ def log_out(request):
     global signed_in
     logout(request)
     signed_in = False
-    return HttpResponsePermanentRedirect(reverse("logout"))
+    return HttpResponsePermanentRedirect(reverse("sign_in"))
 
 
 def create_game(request):
