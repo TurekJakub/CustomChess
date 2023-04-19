@@ -12,15 +12,14 @@
 
 </head>
 
-<body {%block body_atributes%}onresize="redrawCanvas()" {%endblock%}>
+<body {%block body_atributes%}onresize="drawCanvas()" {%endblock%}>
     {%block body%}
     <script>
-        {# drawCanvas({{ height }}, { { width } }, { { figures | safe } }); production code #}
+        {# initializ({{ height }}, { { width } }, { { figures | safe } }, {{ tags| safe}}, {{ perma_tags| safe}},{{figures_map| safe}}); production code #}
+        initializ(15, 8, {{ figures| safe}}, {{ tags| safe}}, {{ perma_tags| safe}},{{figures_map| safe}});
         $(document).ready(function () {
-            drawCanvas(15, 8, {{ figures| safe}}, {{ tags| safe}}, {{ perma_tags| safe}});
-        initializ();
-        openWebSocketConnection();
-       
+            drawCanvas();       
+            openWebSocketConnection();       
        });
         {%comment%} drawCanvas(8, 8, {{ figures| safe}}); {# for testing purposes only # } {%endcomment%}
        
