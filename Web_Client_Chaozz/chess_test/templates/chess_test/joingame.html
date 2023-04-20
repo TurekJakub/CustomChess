@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+{%extends "./base.html"%}
+
+<head>
+    {%block head%}
+    {%load static%}
+    <script src="{% static 'chess_test/signup.js' %}"></script>
+    <script src="{% static 'chess_test/joingame.js' %}"></script>
+
+    {%endblock%}
+</head>
+
+<body {%block body_atributes%}onresize="resizeForm()" onload="resizeForm()" {%endblock%}>
+    {% block body_content %}
+    <script> $(document).ready(function () {
+            refreshListOfGames();
+        });
+    </script>
+    <div class="d-flex flex-column w-100 h-100 py-2 px-2">
+        <div id="container-searchbar" class="w-100 h-50 mt-2 ">
+            <h2>Vyberte si hru</h2>
+            <input type="search" class="form-control" placeholder="Najít hru" oninput="search(event)"></input>
+        </div>
+        <div id="list-games" class="overflow-y-auto rounded border border-light mt-2 px-0 w-100  bg-dark"
+            style="max-height: 30vh;height:30vh; display:inline-block;">
+            <template id="list-item-template">
+                <div class="w-100 text-white selectDisable border-bottom border-light ps-1" onclick="selectGame(event)">
+                </div>
+            </template>
+        </div>
+        <div id="container-submit" class="mt-2">
+            <input id="input-password" type="password" class="form-control" placeholder="Heslo"></input>
+            <button type="button" class="form-control  mt-2 bg-success border-success text-white"
+                onclick="joinGame()">Přidat se do
+                hry</button>
+        </div>
+    </div>
+    {% endblock %}
+</body>
+
+</html>

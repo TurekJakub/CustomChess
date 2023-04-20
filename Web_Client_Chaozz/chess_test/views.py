@@ -23,6 +23,7 @@ from django.template.loader import render_to_string
 
 signed_in = False
 players_turn = True
+games = ['first', 'second', 'third']
 game_info = {
     "height": -1,  # height of board
     "width": -1,  # width of board
@@ -178,9 +179,13 @@ def log_out(request):
 def create_game(request):
     pass
 
-
+@ensure_csrf_cookie
 def join_game(request):
-    pass
+    if(request.method == "POST"):
+       print(request.POST.get("game")+request.POST.get("password"))
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        return JsonResponse({'games':games})
+    return render(request, "chess_test/joingame.html")
 
 
 def initialize_game_information():

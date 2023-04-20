@@ -27,7 +27,9 @@ function changeDisplayedImage() {
     cropper.replace(url)
 }
 function resizeForm() {
-    $('#form-container').removeClass('w-25, w-50')
+    $('#form-container').removeClass('w-25')
+    $('#form-container').removeClass('w-50')
+    $('#form-container').removeClass('w-75')
     if ($(window).width() < 576) {
         $('#form-container').addClass('w-75')
     }
@@ -35,6 +37,7 @@ function resizeForm() {
         $('#form-container').addClass('w-50')
     else
         $('#form-container').addClass('w-25')
+    console.log($(window).width())
 }
 function makeSignUpRequest() {
     imageBlop = cropper.getCroppedCanvas().toBlob(function (blob) { return blob }, 'image/jpeg', 1)
