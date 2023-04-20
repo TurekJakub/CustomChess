@@ -32,7 +32,7 @@ game_info = {
     },  # moves of figures, format: {'figure_name': [move1, move2, ...], ...}
     "figures": {
         "pawn": [2, 1],
-        "test": [1, 1],
+        "test": [4, 1],
       
     },  # positions of figures, format: {'figure_name': [x,y], ...}
     "perma_tags": {
