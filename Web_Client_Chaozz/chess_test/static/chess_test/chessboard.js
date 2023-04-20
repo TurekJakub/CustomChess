@@ -114,7 +114,7 @@ async function handleClickCanvas(event) {
   if (positions === null) {
     positions = await makeAjaxCall({ requested: 'moves' });
   }
-  document.getElementById('canvas-moves').getContext('2d').fillRect(0, a, a,  a)
+  document.getElementById('canvas-moves').getContext('2d').fillRect(0, a, a, a)
   for (let key in figures) {
     let coordinates = figures[key];
     if (inRange(x, coordinates[0] - 1) && inRange(y, coordinates[1] - 1)) { // user selected new figure
@@ -126,7 +126,7 @@ async function handleClickCanvas(event) {
       markMoves(moves, document.getElementById('canvas-moves').getContext('2d'));
       lastSelected = key;
       selected = true;
-     
+      break;
     }
     else if (selected && positions[lastSelected].includes((Math.floor(x / a) + 1) + ':' + (Math.floor(y / a) + 1))) { // user trigger movment of previously selected figure
       console.log(lastSelected + ' was moved at x: ' + x + ', y: ' + y);
@@ -136,6 +136,7 @@ async function handleClickCanvas(event) {
       setAnimationCordinates(coordinates[0] - 1, coordinates[1] - 1, Math.floor(x / a), Math.floor(y / a), lastSelected)
       window.requestAnimationFrame(drawAnimationFrame);
       selected = false;
+      break;
     }
     else { // user click on empty field
       console.log(key)
@@ -155,7 +156,7 @@ function markMoves(moves, ctx) {
   console.log(moves)
   for (let i = 0; i < moves.length; i++) {
     let move = moves[i].split(':');
-    
+
     ctx.beginPath();
     ctx.arc(move[0] * a - a / 2, move[1] * a - a / 2, a / 4, 0, 2 * Math.PI);
     ctx.fillStyle = 'red';
@@ -164,11 +165,11 @@ function markMoves(moves, ctx) {
   }
   ctx = document.getElementById('canvas-figures').getContext('2d');
 }
-var onloadFunc = function (img,ctx, x, y) {
- 
+var onloadFunc = function (img, ctx, x, y) {
+
   return function () {
     ctx.drawImage(img, x, y, a, a);
-    
+
   }
 };
 // draw figures on canvas

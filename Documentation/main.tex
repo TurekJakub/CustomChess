@@ -1,0 +1,63 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{biblatex}
+\usepackage{titlesec}
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{minted}
+\usepackage{biblatex}
+\usepackage{listings}
+
+\geometry{
+ a4paper,
+  left=35mm,
+ top=25mm,
+ right=25mm,
+ bottom=25mm,
+ }
+\setstretch{1.5}
+\addbibresource{biblio.bib}
+\bibliography{reference}
+\begin{document}
+\graphicspath{{./pictures/}}
+\titlelabel{\thetitle.\quad}
+\renewcommand*\contentsname{Obsah}
+\renewcommand{\bibfont}{\small}
+\renewcommand{\thesection}{\Roman{section}} 
+\renewcommand{\thesubsection}{\thesection.\Roman{subsection}}
+\renewcommand{\thesubsubsection}{\thesubsection.\Roman{subsubsection}}
+\renewcommand\listoflistingscaption{Seznam příloh}
+\renewcommand{\listingscaption}{Příloha}
+\input{titlr}
+\newpage{}
+\thispagestyle{empty}
+\mbox{}
+\vfill
+Prohlašuji, že jsem jediným autorem tohoto projektu, všechny citace jsou řádně označené a všechna použitá literatura a další zdroje jsou v práci uvedené. Tímto dle zákona 121/2000 Sb. (tzv. Autorský zákon) ve znění pozdějších předpisů uděluji bezúplatně škole Gymnázium, Praha 6, Arabská 14
+oprávnění k výkonu práva na rozmnožování díla (§ 13) a práva na sdělování díla veřejnosti (§ 18) na dobu časově neomezenou a bez omezení územního rozsahu.
+\newline
+V Praze dne \hfill Petr Dobiáš, Josef Liška, Jakub Turek
+\newpage{}
+\thispagestyle{empty}
+\section*{Anotace}
+Následující práce pojednává o vývoji aplikace založené na atchitektůře klient-server s využitím programovacích jazyku Java, Python a JavaScript, frameworku Django a databáze MongoDB, která umožnuje uživatelům vytvařet a následně hrát derivace hry šachy, v podobě úpravy figur, hrací desky a podmínek vítězství, online. Tyto derivace mohou uživatelé definovat ručně pomocí textovích soubru, či grafického návrháře v aplikaci. Aplikace se sestává ze serverové části a klientské webové aplikace.
+\section*{Abstract}
+Budeme to překládat? :D
+\newpage
+\setcounter{page}{1}
+\tableofcontents 
+\newpage
+\section*{Úvod}
+\addcontentsline{toc}{section}{Úvod}
+\newpage
+\section*{Lorem ipsum}
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec auctor, nisl eget aliquam aliquam, nunc nisl aliquet nisl, eget aliquet
+\newpage
+\printbibliography[heading=bibintoc,title={Reference}]
+\newpage
+\addcontentsline{toc}{section}{Seznam příloh}
+\listoflistings
+
+
+\end{document}
