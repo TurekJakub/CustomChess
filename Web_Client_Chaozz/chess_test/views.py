@@ -1,13 +1,9 @@
 from django.shortcuts import (
-    render,
-    HttpResponse,
-    redirect,
+    render,   
     HttpResponsePermanentRedirect,
 )
-from django.http import HttpResponseForbidden
 from django.urls import reverse
-from django.template import loader
-from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
+from django.views.decorators.csrf import  ensure_csrf_cookie
 from django.http import JsonResponse
 from .connection import *
 from .models import *
@@ -17,30 +13,28 @@ from .forms import sign_up_form, sign_in_form
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
-from django.templatetags.static import static
 from .connection import get_connection
-from django.template.loader import render_to_string
 
 signed_in = False
 players_turn = True
-games = ['first', 'second', 'third']
-game_info = {
+game_info = { # TODO: parsr this from one map
+    # xx = {'figure_name': {'2,_4':{}},},
+    # xxx = {'figure_name': 4,_4, figure_name2: 5,_5},
     "height": -1,  # height of board
     "width": -1,  # width of board
     "moves": {
-        "pawn": ["2:2", "2:3"],
-        "test": ["1:1", "1:2"]
+        "pawn": {'1_2','1_3'},
+        "test": ["1:1", "1:2"],
     },  # moves of figures, format: {'figure_name': [move1, move2, ...], ...}
     "figures": {
-        "pawn": [2, 1],
+        "pawn": ['2:1'],
         "test": [4, 1],
-      
     },  # positions of figures, format: {'figure_name': [x,y], ...}
     "perma_tags": {
         "2:1": [{"color": "blue", "name": "unavailable"}]
     },  # positions of tags that are not removed after turn, format: {'x:y': [tag1, tag2, ...], ...}
     "tags": {"2:1": [{"color": "blue", "name": "unavailable"}]},
-    "figures_map": {"pawn": "pawn.svg", "test":"pawn.svg", "pawn2": "pawn.svg"},
+    "figures_map": {"pawn": "pawn.svg", "test": "pawn.svg", "pawn2": "pawn.svg"},
 }
 
 
@@ -131,19 +125,7 @@ def game(request):
             print(request.POST)
             if request.POST.get("requested") == "figures":
                 return JsonResponse(game_info["figures"])
-            elif request.POST.get("requested") == "moves":
-                """
-                layer = get_channel_layer()
-                async_to_sync(layer.group_send)(
-                    "events",
-                    {
-                        "type": "events_alarm",
-                        "cordinates": "2:2:2:3",
-                        "figure": "pawn",
-                        "action": "move",
-                    },
-                )
-                """
+            elif request.POST.get("requested") == "moves":               
                 print(game_info["moves"])
                 return JsonResponse(game_info["moves"])
             elif request.POST.get("requested") == "post-fig":
@@ -173,19 +155,52 @@ def log_out(request):
     global signed_in
     logout(request)
     signed_in = False
+    get_connection().send_data('logout')
     return HttpResponsePermanentRedirect(reverse("sign_in"))
 
-
+ensure_csrf_cookie
 def create_game(request):
-    pass
+    connection = get_connection()
+    if request.method == "POST":
+        connection.send_data(
+            "crtg:" + request.POST.get("game") + ":" + request.POST.get("password")
+        )  # TODO: solve how to handover number of players
+        if connection.recieve_data().split(":")[0] == "success":
+            return HttpResponsePermanentRedirect(reverse("game"))
+        else:
+            return JsonResponse("error")
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        connection.send_data("getr")
+        rules = connection.recieve_data()
+        return JsonResponse({"games": rules})
+    return render(request, "chess_test/newgame.html")
+
 
 @ensure_csrf_cookie
 def join_game(request):
-    if(request.method == "POST"):
-       print(request.POST.get("game")+request.POST.get("password"))
-    if request.headers.get("x-requested-with") == "XMLHttpRequest":
-        return JsonResponse({'games':games})
-    return render(request, "chess_test/joingame.html")
+    connection = get_connection()
+    if request.method == "POST": # handle request to join game
+        if request.POST.get("game") != None: # check if game was selected
+            try:
+                connection.send_data( # send request to server
+                    "joig:" + request.POST.get("game") + ":" + request.POST.get("password")
+                )
+                if connection.recieve_data().split(":")[0] == "success":
+                    return HttpResponsePermanentRedirect(reverse("game"))
+                err = "Hra neexistuje nebo byla zadané špatné heslo." # handle join game error
+            except:
+                err = "Spojení se serverem bylo ztraceno"
+        else:
+            err = "Nebyla vybrána žádná hra."
+        return JsonResponse(err)
+    if request.headers.get("x-requested-with") == "XMLHttpRequest": # handle ajax request to fetch currently available games
+        try:
+            connection.send_data("getg")
+            games = connection.recieve_data()
+        except:
+             return JsonResponse("Spojení se serverem bylo ztraceno")
+        return JsonResponse({"games": games})
+    return render(request, "chess_test/joingame.html") # render page on no ajax get request
 
 
 def initialize_game_information():

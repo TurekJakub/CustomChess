@@ -1,18 +1,16 @@
 import threading
 import socket as s
 import ssl
-import select
-from . import routing
-from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
 
 connection = None
-
 
 def get_connection():
     global connection
     if connection == None:
-        connection = Connection()
+        try:
+         connection = Connection()
+        except:
+            return None      
     return connection
 
 
@@ -39,7 +37,7 @@ class Connection:
             if "update" in message:
                 print("update")
         print("Successfully finished")
-        layer = get_channel_layer()
+      
 
     def receive_files(self, number_of_files):
         while number_of_files > 0:
