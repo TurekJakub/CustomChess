@@ -11,14 +11,14 @@ public class GamesManager extends Thread {
        games = new HashMap<>();
        this.server = server;
     }
-    public synchronized void joinGame(String name, Client player){
-        GameThread gameThread = games.get(name);
-
-        if(gameThread.accept(player)){
+    public synchronized void joinGame(String name,String password,Client player){
+        GameThread gameThread = games.get(name);       
+        if(gameThread.accept(player,password)){
             gameThread.start();
-        }
+        }}
+        return gameThread.getRulesName();
     }
-    public synchronized void creatGame(String name, int numberOfPlayers, List<File> gameFiles, List<File> gameResources, int timeout){
+    public synchronized void creatGame(String name, int numberOfPlayers, List<File> gameFiles, int timeout){
         Game game = new Game(numberOfPlayers,name,gameFiles,gameResources,server,this);
         games.put(name, new GameThread(game,timeout));
         System.out.println("New");

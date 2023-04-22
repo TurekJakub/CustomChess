@@ -17,11 +17,13 @@ public class GameDataObject {
     ArrayList<ObjectId> playersInfoFiles;
     ArrayList<FigureDataObject> figures;
     String name;
-    public GameDataObject(String name,ObjectId generalGameInfoFile, ArrayList<ObjectId> playersInfoFiles, ArrayList<FigureDataObject> figures) {
+    int numberOfPlayers;
+    public GameDataObject(String name,ObjectId generalGameInfoFile, ArrayList<ObjectId> playersInfoFiles, ArrayList<FigureDataObject> figures,int numberOfPlayers) {
         this.generalGameInfoFile = generalGameInfoFile;
         this.playersInfoFiles = playersInfoFiles;
         this.figures = figures;
         this.name = name;
+        this.numberOfPlayers = numberOfPlayers;
     }
 
     public String getName() {
@@ -57,5 +59,11 @@ public class GameDataObject {
 
     public void setFigures(ArrayList<FigureDataObject> figures) {
         this.figures = figures;
+    }
+    public void setNumberOfPlayers(int numberOfPlayers) {
+        this.numberOfPlayers = numberOfPlayers;
+    }
+    public int getNumberOfPlayers() {
+        return numberOfPlayers;
     }
 }

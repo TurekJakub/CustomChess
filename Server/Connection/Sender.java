@@ -15,12 +15,10 @@ import java.util.List;
 public class Sender {
 
     public static void send(Socket receiver, String data) throws IOException {
-        PrintWriter out = new PrintWriter(receiver.getOutputStream());
-        out.println(data);
-        out.flush();
-        if (out.checkError()) {
-            throw new IOException();
-        }
+        BufferedStreamWriter out = new BufferedWriter(new OutputStreamWriter(receiver.getOutputStream()));
+        byte[] length = byte[] bytes = ByteBuffer.allocate(4).putInt(data.length).array(); 
+        out.write(length);
+        out.write(data.getBytes(StandardCharsets.UTF_8));    
 
     }
     // Try to find file of given id in given MongoDatabase and if find it send it over the given Socket

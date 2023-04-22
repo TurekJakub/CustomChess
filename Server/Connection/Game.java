@@ -15,27 +15,28 @@ public class Game {
     // TODO create and implement GameLogic
     private final List<Client> players;
     private final String name;
+    private final String password;
     private final int NUMBER_OF_PLAYERS;
-    private final List<File> gameInfoFiles;
-    private final List<File> gameResources;
+    private final String rulesName;
     private final Server server;
     private final GamesManager gamesManager;
 
    // private final GameLogic gameLogic;
 
-    public Game(int numberOfPlayers, String name, List<File> gameInfoFiles, List<File> gameResources,Server server, GamesManager gamesManager) {
+    public Game(int numberOfPlayers, String name, String password, rulesName,Server server, GamesManager gamesManager) {
         this.players = new ArrayList<>();
         this.name = name;
+        this.password = password;
         NUMBER_OF_PLAYERS = numberOfPlayers;
-        this.gameResources = gameResources;
-        this.gameInfoFiles = gameInfoFiles;
+        this.rulesName = rulesName;
         this.server = server;
         this.gamesManager = gamesManager;
 
         //gameLogic = new GameLogic(gameInfoFiles);
     }
-
-
+    public String getRulesName() {
+        return rulesName;
+    }
     private void sendGameFiles(List<File> files, Socket player) {
 
         try {
@@ -49,7 +50,10 @@ public class Game {
 
     }
 
-    public  boolean acceptNewPlayer(Client player) {
+    public  boolean acceptNewPlayer(Client player, String password) {
+        if(!this.password.equals(password)){
+            throw new InputMismatchException();
+        }
         if (players.size() < NUMBER_OF_PLAYERS) {
             try {
                 Sender.send(player.getClientSocket(), name + ":" + System.currentTimeMillis());
@@ -57,12 +61,7 @@ public class Game {
                 return false;
             }
             players.add(player);
-            player.setInGame(true);
-
-            if (players.size() > 1) {
-              //  sendGameFiles(gameInfoFiles, player.getClientSocket());
-                sendGameFiles(gameResources, player.getClientSocket());
-            }
+            player.setInGame(true);          
             if (players.size() == NUMBER_OF_PLAYERS) {
                 return true;
             }
