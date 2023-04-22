@@ -1,5 +1,0 @@
-Manifest-Version: 1.0
-Main-Class: org.connection.Main
-Class-Path: bcutil-jdk15on-1.70.jar gson-2.10.jar bcpkix-jdk15on-1.70.ja
- r bcprov-jdk15on-1.70.jar
-
