@@ -26,7 +26,7 @@ public class ClientDataObject {
     private Date last_login;
 
     private List<AuthenticationToken> tokens;
-    private List<ObjectId> games;
+    private List<GameDataObject> games;
     private ObjectId profilePicture;
 
 

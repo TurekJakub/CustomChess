@@ -24,6 +24,7 @@ public class ClientThread extends Thread {
     private final Datastore dbConnection;
     private final UserAuthenticator userAuthenticator;
     private final EmailSender emailSender;
+    private final Gson gson;
 
 
     public ClientThread(GamesManager gamesManager, Server server, Client client, int timeout) {
@@ -34,6 +35,7 @@ public class ClientThread extends Thread {
         this.connection = client.getClientSocket();
         emailSender = new EmailSender();
         userAuthenticator = new UserAuthenticator();
+        gson = new Gson();
         dbConnection = establishDbConnection("CustomChess", "org.connection", "mongodb+srv://UwU:MamRadTuhleDatabazi69@customchess.hmtwp1r.mongodb.net/?retryWrites=true&w=majority");
 
     }
@@ -215,40 +217,51 @@ public class ClientThread extends Thread {
     private boolean evaluateClientInput(String input) throws IOException {
         String[] splitInput = input.split(":");
         switch (splitInput[0]) {
-            case "crtg":
-
+            case "crtg": // TODO rework this to use databaseand password
                 List<File> gameFiles = receiveGameFiles(connection);
                 List<File> gameResources = receiveGameFiles(connection);
                 gamesManager.creatGame(splitInput[1], Integer.parseInt(splitInput[2]), gameFiles, gameResources, timeout);
                 gamesManager.joinGame(splitInput[1], client);
                 return false;
             case "joig":
+                String gameRules;
                 try {
-                    gamesManager.joinGame(splitInput[1], client);
+                   gameRules =  gamesManager.joinGame(splitInput[1],splitInput[0], client);
                 } catch (InputMismatchException exception) {
                     Sender.send(connection, "err:GameIsFull");
                     return true;
                 }
+                figures = dbConnection.find(GameDataObject.class).filter(eq("name", gameRules)).iterator().toList().get(0).getFigures();
+                sendGameFigures(figures);/
                 return false;
             case "add":
-                // TODO add adding new games definitions to database
+                // TODO add new games definitions to database
+                cont;
+            case "getg": // handle request for list of all games
+                Sender.send(connection, gson.toJSON(gamesManager.getGamesList()));
+                return true;
+            case "getr":   // handle request for list of all players game rules                
+                clientsGames = dbConnection.find(ClientDataObject.class).filter(eq("username", username)).iterator().toList().get(0).getGames();
+                String[]gameNames = new String[clientsGames.size()];
+                for(int i = 0; i < clientsGames.size(); i++){
+                    gamesNames[i] = clientsGames.get(i).getName();
+                }
+                Sender.send(connection, gson.toJSON(gameNames));
+                return true;
+
             default:
+                client.setAuthenticated(false);
+                authenticatedUser();
                 return true;
 
         }
 
     }
 
-    // TODO will be removed in future versions
-    public List<File> receiveGameFiles(Socket creatorsSocket) throws IOException {
-        List<File> files = new ArrayList<>();
-        int numberOfFiles;
-        numberOfFiles = Integer.parseInt(Receiver.readData(creatorsSocket));
-        for (int i = 0; i < numberOfFiles; i++) {
-
-            files.add(Receiver.readFile(creatorsSocket));
-
+    public sendFigures(List<FigureDataObject> figures) throws IOException {
+        for(FigureDataObject figur: figures){
+            Sender.send(client.getConnection(), figur.getName());
+            Sender.sendFileFromDatabase(dbConnection.getDatabase(), figur.getIcon(), client.getConnection());
         }
-        return files;
     }
 }

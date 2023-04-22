@@ -10,10 +10,13 @@ public class GameThread extends Thread {
         this.game = game;
         this.timeout = timeout;
     }
-    public synchronized boolean accept(Client player){
-       return game.acceptNewPlayer(player);
+    public synchronized boolean accept(Client player, String password){
+       return game.acceptNewPlayer(player, password);
     }
     public void run(){
         game.runGame(timeout);
+    }
+    public synchronized String getRulesName(){
+        return game.getRulesName();
     }
 }
