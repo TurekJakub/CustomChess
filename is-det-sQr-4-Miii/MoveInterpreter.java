@@ -155,7 +155,7 @@ public class MoveInterpreter {
         //return validMoves;
     }
 
-    private String key(int x, int y, String s) {
+    public static String key(int x, int y, String s) {
         String keyS = x + "," + "_" + s;
         return keyS;
     }
