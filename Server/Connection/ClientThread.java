@@ -218,8 +218,8 @@ public class ClientThread extends Thread {
         String[] splitInput = input.split(":");
         switch (splitInput[0]) {
             case "crtg": // TODO rework this to use databaseand password
+                
                 List<File> gameFiles = receiveGameFiles(connection);
-                List<File> gameResources = receiveGameFiles(connection);
                 gamesManager.creatGame(splitInput[1], Integer.parseInt(splitInput[2]), gameFiles, gameResources, timeout);
                 gamesManager.joinGame(splitInput[1], client);
                 return false;
@@ -264,4 +264,5 @@ public class ClientThread extends Thread {
             Sender.sendFileFromDatabase(dbConnection.getDatabase(), figur.getIcon(), client.getConnection());
         }
     }
+    public   retrieveRuleFiles(String gameName)
 }
