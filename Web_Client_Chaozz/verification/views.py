@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponsePermanentRedirect, HttpResponseNotAllowed
-from chess_test.connection import get_connection
+from game.connection import get_connection
 from .models import ChessUser
 from django.contrib.auth.hashers import make_password
 from django.utils.http import urlsafe_base64_decode

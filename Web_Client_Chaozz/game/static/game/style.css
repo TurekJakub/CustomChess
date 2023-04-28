@@ -1,0 +1,68 @@
+.floatLabel {
+    text-align: center;
+  }
+  
+  h2 {
+    color: whitesmoke;
+    size: 10mm;
+    text-align: center;
+  }
+  
+  h3 {
+    color: whitesmoke;
+    font-size: 20px;
+    text-align: center;
+  }
+  
+  h1 {
+    color: whitesmoke;
+    text-align: center;
+    size: 50px;
+  }
+  
+  .backgroundImage {
+    background-image: url("background.png");
+    background-size: cover;
+    background-position: center;
+    height: 100vh;
+  }
+  
+  .mainMenu {
+    height: 250px;
+    border: 1px;
+    border-color: brown;
+  }
+  
+  h2 {
+    color: whitesmoke;
+    size: 10mm;
+    text-align: center;
+  }
+  
+  table {
+    border-collapse: collapse;
+  }
+  
+  .selectDisable {
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+  }
+  
+  .profileImg {
+  }
+  
+  .nameLabel {
+    text-align: center;
+    color: whitesmoke;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  
+  .navButton {
+    height: 50px;
+    width: 200px;
+  }

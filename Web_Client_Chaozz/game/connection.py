@@ -48,7 +48,7 @@ class Connection:
     def recieve_file(self):
         file_info = self.recieve_data.split(":")
         size = int(file_info[1].strip())
-        with open("./chess_test/static/temp/" + file_info[0], "wb") as file:
+        with open("./game/static/temp/" + file_info[0], "wb") as file:
             while 0 < size:
                 file_bytes = self.connection.recv(4096)
                 file.write(file_bytes)
