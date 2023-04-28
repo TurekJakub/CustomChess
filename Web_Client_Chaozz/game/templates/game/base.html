@@ -10,7 +10,7 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.1/dist/js.cookie.min.js"></script>
     {% load static %}
-    <link href="{% static 'chess_test/style.css' %}" rel="stylesheet">
+    <link href="{% static 'game/style.css' %}" rel="stylesheet">
     <title> {% block title %}{% endblock %}</title>
     {% block head %}{% endblock %}
 </head>
@@ -28,7 +28,7 @@
                     <div class="w-100 d-flex align-items-center" style="width:calc(16% - 16px);">
                         <img class=" rounded me-2 mt-1 ms-1 mb-1 d-flex align-items-center selectDisable border border-success"
                             {%if signin %} src="{% static 'temp' %}{{profile_picture}}" {%else%}
-                            src="{% static 'chess_test' %}/bocchi.jpg" {% endif%}alt=""
+                            src="{% static 'game' %}/bocchi.jpg" {% endif%}alt=""
                             style="height: 40px; width: 40px;">
                         <label class=" ms-auto me-2 selectDisable nameLabel">{% if signin %}{{username}}{%else%}Bocchi
                             the Rock!{% endif %}</label>

@@ -2,6 +2,7 @@ import json
 
 from channels.generic.websocket import WebsocketConsumer
 from asgiref.sync import async_to_sync
+from .views import game_name, username
 
 
 class ChatConsumer(WebsocketConsumer):
@@ -9,14 +10,21 @@ class ChatConsumer(WebsocketConsumer):
         self.accept()
         print('accept')
         async_to_sync(self.channel_layer.group_add)(
-            'events',
+            game_name,
             self.channel_name
         )
-        
+        async_to_sync(self.channel_layer.group_add)(
+            username,
+            self.channel_name
+        )
 
     def disconnect(self, close_code):
          async_to_sync(self.channel_layer.group_discard)(
-            'events',
+            game_name,
+            self.channel_name
+        )
+         async_to_sync(self.channel_layer.group_add)(
+            username,
             self.channel_name
         )
    
@@ -29,7 +37,7 @@ class ChatConsumer(WebsocketConsumer):
             "figure": event['figure'],
         }))
 
-    def events_alarm(self, event):      
+    def game_message(self, event):      
         self.send_message(event)
        
   
