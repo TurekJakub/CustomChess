@@ -11,13 +11,13 @@
 
 \geometry{
  a4paper,
-  left=35mm,
+ left=35mm,
  top=25mm,
  right=25mm,
  bottom=25mm,
  }
 \setstretch{1.5}
-\addbibresource{biblio.bib}
+\addbibresource{reference.bib}
 \bibliography{reference}
 \begin{document}
 \graphicspath{{./pictures/}}
@@ -42,16 +42,68 @@ V Praze dne \hfill Petr Dobiáš, Josef Liška, Jakub Turek
 \thispagestyle{empty}
 \section*{Anotace}
 Následující práce pojednává o vývoji aplikace založené na atchitektůře klient-server s využitím programovacích jazyku Java, Python a JavaScript, frameworku Django a databáze MongoDB, která umožnuje uživatelům vytvařet a následně hrát derivace hry šachy, v podobě úpravy figur, hrací desky a podmínek vítězství, online. Tyto derivace mohou uživatelé definovat ručně pomocí textovích soubru, či grafického návrháře v aplikaci. Aplikace se sestává ze serverové části a klientské webové aplikace.
-\section*{Abstract}
-Budeme to překládat? :D
 \newpage
 \setcounter{page}{1}
 \tableofcontents 
 \newpage
 \section*{Úvod}
+Následující práce pojednává o vývoji aplikace, jejímž cílem je umožnit uživatelům hrát v online multiplayeru derivace hry šachy a zároveň jim umožnit jednoduše tyto derivace vytvářet prostřednictvím grafického návrháře vlastních pravidel v klientské aplikaci. Přesná podoba těchto vlastních pravidel bude podrobněji rozebrána v následujících kapitolách, ale ve zkratce se jedná o možnost definovat vlastní rozměr šachovnice, rozložení figur nebo vytvoření vlastních figur a podobně.
+
+Aplikace je založené na architektuře klient-server a skládá se tedy ze dvou částí. Serverové částí, která je napsaná v programovacím jazyku Java s využitím řady knihoven, kterým se budeme více věnovat později. A klientské části, kterou je v tomto případě webová aplikace, jejíž back-endová část je napsaná v jazyce Python s využitím frameworku Django, její front-endová část využívá CSS frameworku Bootstrap pro snazší práci s kaskádovými styly a JavaScriptové knihovny JQuery. Z tohoto důvodu bude tedy následující text rozdělen na dvě hlavní částy a to tedy na část pojednávající o serverové části aplikace a část pojednávající o klientské části aplikace.
 \addcontentsline{toc}{section}{Úvod}
 \newpage
-\section*{Lorem ipsum}
+\section{Tvorba vlastních pravidel hry šachy}
+\newpage
+\section{Server}
+Následující kapitola pojednává o serverové části aplikace, tedy o její struktuře, technologiích použitých pro její vývoj, řešení některých klíčových problémů řešených v této části aplikace a také o komunikačním protokolu sloužícímu pro komunikaci mezi serverem a klientem.
+\subsection{Použité technologie}
+Následující kapitola poskytuje výčet technologií a knihoven používaných serverem a stručný popis jejich fungování a využití v tomto projektu
+\subsubsection{MongoDB}
+Jedná se on o NoSQL, což znamená, že místo klasické struktury tabulek známe z SQL databází, jsou data ukládána do souboru BSON, binární forma formátu JSON, což usnadňuje například ukládání souboru. Databázi je také možno v rámci služby Atlas provozovat v cloudu bez nutnosti vetší údržby, což je možnost, kterou využívá i tento projekt. Pro komunikaci s touto databází serverová část používat také MongoDB driver pro jazyk Java a také knihovnu Morphia, která poskytuje obdobu objektově orientovaného mapování pro NoSQL databázi MongoDB.
+\subsubsection{Bouncy castel}
+Jedná se o opensource knihovnu, která nabízí implementace většiny standartě používaných kryptografických algoritmů v jazyce Java\cite{bouncyCastle}. V tomto projektu je primárně využívána pro zabezpečení komunikace mezi klientem a serverem pomocí protokolu TLS 1.3, ale také pro bezpečné ukládání hesel do databáze ve standartu podporované Django frameworkem.
+\subsubsection{Simple Java Mail a Jsoup}
+Jedná se o knihovnu, která usnadňuje odesílání emailů pomocí Javy, kdy po prvotním nakonfigurování STMP serveru, případně dalších parametrů jako například šifrování zpráv, umožňuje jednoduše odesílat jak prosté textové zprávy, tak emaily definované pomocí HTML šablony. Právě druhá z možností je využívána v tomto projektu a pro dynamické vkládání dat, jako třeba url pro reset hesla, do HTML šablon je používána druhá ze zmíněných knihoven, HTML parser Jsoup. Obě tyto knihovny jsou tedy v tomto projektu využívány  pro odesílání emailu pro potvrzení registrace a případně reset hesla.
+\subsubsection{Gson}
+Knihovna vytvořená společností Google sloužící pro serializaci Java objektů do podoby textového řetězce ve formátu json. Slouží jednak pro načítání vlastních pravidel hry, která jsou uložena v několika souborech ve formátu json a také pro serializaci dat, které jsou během hry odesílaný serverem klientu pro zobrazení, jako aktuální rozložení figur a podobně.
+\newpage
+\subsection{Struktura aplikace a základy fungování}
+Následující podkapitola se věnuje struktuře serverové aplikace a základním principům jejího fungování. Server je rozdělen na dva balíčky první z nich Connection, jak už název napovídá, se stará o síťovou komunikaci a autentizaci klientu, zatím co druhý balíček GameLogick, obstarává samotný průběh hry, tedy interpretaci vlastních pravidel hry a vyhodnocovaní tahů zahraných hráči. Následující dvě sekce, tedy stručně pojednávají o struktuře a fungování každého z těchto balíčků. 
+\subsubsection{Connection}
+Z hlediska funkce by se třídy tohoto balíčku dali rozdělit do pěti základních kategorií. Tyto kategorie a některé do nich spadající třídy budou zmíněny v následujícím stručném schnutí fungování aplikace, ale kompletní seznam tříd a jejich zařazení můžete najít v přiložené tabulce.
+
+Po spuštění serveru dojde k načtení jeho konfigurace ze souboru \textit{config.json}, kde je specifikovaná, délka fronty, maximální počet připojených klientů, ale třeba také cesta k SSL certifikátu a privátnímu klíčí, který slouží pro zabezpečení komunikace, či STMP serveru pro odesílaní verifikačních emailu.
+
+Poté je spuštěno hlavní vlákno serveru reprezentované třídou \textit{Server}, které je zodpovědné za navazování spojení s klientem a následné zařazení tohoto spojení buďto mezi obsluhované klienty, nebo, v případě překročení kapacity serveru, do fronty a také pomocné vlákno, reprezentované třídou \textit{}{QueueManager}, které je zodpovědné za správu fronty, tedy za odstraňování zavřených spojení z fronty, či zařazování spojení z fronty mezi obsluhovaná po uvolnění kapacity. Obě tyto třídy patří mezi vlákna režie, která jsou jak je již patrno za správu jednotlivcích spojení, či prostředků aplikace.
+
+Pokud je na serveru ještě volná kapacita, dojde po zařazení spojení mezi obsluhovaná připojení je pro jeho obsluhu vytvořeno nové vlákno reprezentované třídou \textit{ClientThread} a je zahájena autentizační rutina, která neskončí dokud se uživatel úspěšně nepřihlásí nebo se nedojde k ukončení spojení. Pokud je autentizace úspěšně dokončena začne vlákno obsluhovat požadavky klienta, do doby dokud klient nevytvoří novou hru, nebo se nepřipojí do již existující hry. Protokol této komunikace bude popsán v další kapitole.
+
+Ve chvíli kdy se uživatel připojí do hry, dojde k odeslání souboru potřebných pro danou hru, vlastní ikony figur, z databáze klientovi. Poté dojde k ukončení daného vlákna a komunikace začne být obsluhována vláknem reprezentovaným třídou \textit{GameThread}, které spravuje komunikaci mezi všemi hráči v jedné hře, hra probíhá na tahy, tudíž je žádoucí aby byli klienti obsluhování postupně. Vlákno \textit{GameThread} začne vyhodnocovat požadavky až po připojení všech hráčů.\textit{} 
+
+\begin{listing}[!ht]
+\begin{tabular}{ |p{3cm}|p{3,2cm}|p{3,2cm}|p{4cm}| }
+\hline
+\multicolumn{4}{|c|}{Rozaření tříd dle funkce} \\
+\hline
+ Vlákna režie& Pomocné třídy & Datové objekty & Databázová data \\
+\hline
+Server & Sender &Client &ClientDataObject\\
+GamesManager & Reciever  & ServerParameters &  GameDataObject\\
+\cline{3-3} QueueManager&EmailSender& Třídy s logikou & AuthenticationToken   \\
+\cline{1-1} \cline{3-3} Komunikační vlákna & ParametersParser PasswordHasher & Game & FigureDataObject \\
+\cline{1-1} ClientThread GameThread& SecureConnection Manager& &\\
+& UserAuthenticator & &\\
+\hline
+\end{tabular}
+\caption{Tabulka reprezentující rozřazení tříd balíčku Connection dle funkce}
+\end{listing}
+\
+\newpage
+\subsubsection{GameLogick}
+\newpage
+\subsection{Klíčové problémy a jejich řešení}
+\newpage
+\section{Klient}
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec auctor, nisl eget aliquam aliquam, nunc nisl aliquet nisl, eget aliquet
 \newpage
 \printbibliography[heading=bibintoc,title={Reference}]
