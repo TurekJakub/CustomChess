@@ -68,7 +68,7 @@ Jedná se o knihovnu, která usnadňuje odesílání emailů pomocí Javy, kdy p
 Knihovna vytvořená společností Google sloužící pro serializaci Java objektů do podoby textového řetězce ve formátu json. Slouží jednak pro načítání vlastních pravidel hry, která jsou uložena v několika souborech ve formátu json a také pro serializaci dat, které jsou během hry odesílaný serverem klientu pro zobrazení, jako aktuální rozložení figur a podobně.
 \newpage
 \subsection{Struktura aplikace a základy fungování}
-Následující podkapitola se věnuje struktuře serverové aplikace a základním principům jejího fungování. Server je rozdělen na dva balíčky první z nich Connection, jak už název napovídá, se stará o síťovou komunikaci a autentizaci klientu, zatím co druhý balíček GameLogick, obstarává samotný průběh hry, tedy interpretaci vlastních pravidel hry a vyhodnocovaní tahů zahraných hráči. Následující dvě sekce, tedy stručně pojednávají o struktuře a fungování každého z těchto balíčků. 
+Následující podkapitola se věnuje struktuře serverové aplikace a základním principům jejího fungování. Server je rozdělen na dva balíčky první z nich Connection, jak už název napovídá, se stará o síťovou komunikaci a autentizaci klientu, zatím co druhý balíček GameLogic, obstarává samotný průběh hry, tedy interpretaci vlastních pravidel hry a vyhodnocovaní tahů zahraných hráči. Následující dvě sekce, tedy stručně pojednávají o struktuře a fungování každého z těchto balíčků. 
 \subsubsection{Connection}
 Z hlediska funkce by se třídy tohoto balíčku dali rozdělit do pěti základních kategorií. Tyto kategorie a některé do nich spadající třídy budou zmíněny v následujícím stručném schnutí fungování aplikace, ale kompletní seznam tříd a jejich zařazení můžete najít v přiložené tabulce.
 
@@ -78,8 +78,11 @@ Poté je spuštěno hlavní vlákno serveru reprezentované třídou \textit{Ser
 
 Pokud je na serveru ještě volná kapacita, dojde po zařazení spojení mezi obsluhovaná připojení je pro jeho obsluhu vytvořeno nové vlákno reprezentované třídou \textit{ClientThread} a je zahájena autentizační rutina, která neskončí dokud se uživatel úspěšně nepřihlásí nebo se nedojde k ukončení spojení. Pokud je autentizace úspěšně dokončena začne vlákno obsluhovat požadavky klienta, do doby dokud klient nevytvoří novou hru, nebo se nepřipojí do již existující hry. Protokol této komunikace bude popsán v další kapitole.
 
-Ve chvíli kdy se uživatel připojí do hry, dojde k odeslání souboru potřebných pro danou hru, vlastní ikony figur, z databáze klientovi. Poté dojde k ukončení daného vlákna a komunikace začne být obsluhována vláknem reprezentovaným třídou \textit{GameThread}, které spravuje komunikaci mezi všemi hráči v jedné hře, hra probíhá na tahy, tudíž je žádoucí aby byli klienti obsluhování postupně. Vlákno \textit{GameThread} začne vyhodnocovat požadavky až po připojení všech hráčů.\textit{} 
+Ve chvíli kdy se uživatel připojí do hry, dojde k odeslání souboru potřebných pro danou hru, vlastní ikony figur, z databáze klientovi. Poté dojde k ukončení daného vlákna a komunikace začne být obsluhována vláknem reprezentovaným třídou \textit{GameThread}, které spravuje komunikaci mezi všemi hráči v jedné hře, hra probíhá na tahy, tudíž je žádoucí aby byli klienti obsluhování postupně. Vlákno \textit{GameThread} začne vyhodnocovat požadavky až po připojení všech hráčů. Třídy \textit{GameThread} a \textit{ClientThread} tedy patří mezi komunikační vlákna, jejich hlavním účelem je přijímat požadavky od klientu, spouštět příslušné metody pro jejich obsluhu a odesílání výsledků v podobě odpovědi.
 
+Po záhejení hry už je pouze s pomocí tříd balíčku GameLogic v smyčce vyhodnocovány tahy jednotlivých hráčů a jsou jim vraceny jejich výsledky do doby, než je hra ukončena. V tuto chvíli je hráčum odeslán výsledek hry a \textit{GamesManager} odebere dohranou hru ze seznamu probíhajících her a komunikace s jednotlivými hráči je opět přesunuta do samostatných vláken.
+
+Zbylé tři skupiny, o kterých jsem se v rámci popisu fungování balíčku nezmínil jsou třídy sloužící pro reprezentaci dat v databázi, které jsou používány pro objektově relační mapování dat v databázi. Třídy datových objektů, které jsou podobné předchozí skupině s tím rozdílem, že obsahují i data, které jsou potřeba pouze za běhu programu a není třeba je ukládat. Poslední skupinou jsou třídy s logikou, které obsahují pouze třídu \textit{Game}, která definuje průběh herní smyčky ve vlákně \textit{GameThread}.
 \begin{listing}[!ht]
 \begin{tabular}{ |p{3cm}|p{3,2cm}|p{3,2cm}|p{4cm}| }
 \hline
@@ -99,9 +102,85 @@ GamesManager & Reciever  & ServerParameters &  GameDataObject\\
 \end{listing}
 \
 \newpage
-\subsubsection{GameLogick}
+\subsubsection{GameLogic}
 \newpage
 \subsection{Klíčové problémy a jejich řešení}
+Následující kapitola pojednává o nejzásadnějších problémech, které bylo třeba na straně serveru vyřešit a popisuje jejich případné řešení.
+\subsubsection{Komunikační protokol}
+Jedním z klíčových problému aplikace bylo vytvořit efektivní a snadno použitelný systém komunikace mezi serverem a klientem. Pro tento účel jsem tedy vytvořili jednoduchý textový komunikační protokol, kdy se požadavek vždy skládá ze jména požadavku a jeho argumentů oddělených dvojtečkami. Následující ukázka kód tedy ukazuje vytvoření obecného požadavku a následně i konkrétní požadavek pro přihlášení. 
+\begin{listing}[!ht]
+\begin{minted}{python}
+# obecný požadavek
+request = 'rquest_name:arg1:arg2'
+# příklad požadavku o autentikaci
+# zjednodušeně znázorněné odeslání a přijetí dat
+server_connection.send('signin:username:password') 
+response = server_connection.reciece().split(':')
+if(response[1] == 'success'):
+    print('přihlášen')
+else:
+    print(response[1])  
+\end{minted}
+\caption{Ukázka vytvoření požadavku protokolu v jazyce Python}
+\end{listing}
+Jak je vidět z výše uvedeného příkladu, tak odpověď serveru na požadavek je v případě požadavku na provedení akce na serveru buďto \textit{msg:success} v případě úspěšného provedení,nebo \textit{err:error message} v případě selhání. Nebo v případě, že se jedná o požadavek o zaslání dat, zůstává chybová odpověd stejná, ale v případě úspěchu jsou navrácena požadovaná data ve formátu json.
+
+Pro vysvětlení fungování protokolu následující tabulka uvádí všechny možné požadavky, seznam jejich argumentů (je třeba je zadat v uvedeném pořadí) a typ jejich odpovědi.
+\newpage
+\begin{listing}[!ht]
+\begin{tabular}{ |p{4cm}|p{6cm}|p{4cm}| }
+\hline
+název požadavku & argumenty & návratová hodnota \\
+\hline
+signin & username, password & None \\
+signup & username, password, email & None\\
+reset & username/email & None\\
+crtg & game name, password, rules name & None\\
+joig & game name, password & array of images \\
+getg & None & array of games names\\
+getr & None & array of rules names\\
+\hline
+\end{tabular}
+\caption{Seznam všech požadavků a jejich argumentů}
+\end{listing}
+\subsubsection{Znovu připojení do hry}
+Další zásadní problémem byla nutnost vyřešit způsob, jak umožnit hráči, který v době kdy se účastní hry ztratí spojení se serverem, znovu se připojit do rozehrané hry a dohrát ji.
+
+Řešení tohoto problému se nakonec ukázalo jako ne tak komplikované, jak by se na první pohled mohlo zdát. Pro implementaci této mechaniky totiž stačí používat unikátní identifikátory pro každé připojení do hry, které jsou v našem případě reprezentovány náhodným textovým řetězcem.
+
+Vzhledem k tomu, že běžící server si uchovává informace o připojených klientech ve formě instancí třídy \textit{Client}, je možné vždy při připojení do nové hry do této instance uložit, náhodně vygenerovaný textový řetězec, jeho generování je znázorněno v ukázce níže, a zároveň tento identifikátor uložit pro daného uživatele do databáze.
+
+\begin{listing}[!ht]
+\begin{minted}{java}
+ private String getRandomString(int size) {
+        byte[] stringBytes = new byte[size];
+        new Random().nextBytes(stringBytes);
+        return new String(Base64.encodeBase64(stringBytes));
+}
+\end{minted}
+\caption{Generování náhodného řetězce v jazyce Java}
+\end{listing}
+
+Po implementování těchto identifikátorů už jen stačí pokaždé, když je navázáno nové spojení s klientem získat z databáze tento identifikátor, a pokud se shoduje s identifikátorem některého z odpojených hráčů, jednoduše spoji toto nové připojení s daty o daném hráči.
+
+Poté už stačí jen kdykoliv, kdy dojde ke ztrátě spojení, místo ukončení hry pouze označit daného hráče za odpojeného a spustit timeout po jehož vypršení dojde ke kontrole zda se daný hráč znovu připojil a pokud ano, je mu odeslán aktuální stav hry a hra pokračuje, v opačném případě je hra ukončena.
+\subsubsection{Autentizace klientů}
+Dalším ze zásadních problémů bylo při spuštění ověřit identitu uživatele a zobrazit mu pouze jemu náležící data, a tedy v podstatě vytvořit uživatelské účty.
+
+Vyřešit tento problém nebylo zdaleka tak náročné, jelikož se jedná o jeden z nejčastěji řešených problémů a je jeho řešení je tedy velmi dobře zdokumentované a má jasně formulované postupy dobré praxe, kterých se držet pro vytvoření bezpečných uživatelských účtů. Tento projekt využívá pro ukládání hesel standard užívaného frameworkem Django a to z důvodu snazšího procesu změny hesla, která je dokončována právě webovou aplikací napsanou s pomocí Django frameworku. Nyní tedy přejděme k samotnému procesu vytvoření uživatelského účtu.
+
+Poté, co uživatel zašle požadavek o vytvoření nového účtu, dojde k ověření zda-li pro zadaný email a jméno již účet neexistuje a pokud ne, jsou zadané údaje uloženy do databáze jakožto nový uživatelský účet, který ale zatím není aktivovaný a nemůže se pomocí něj nikdo přihlásit. Proto aby byl účet aktivován, je nejprve nutné ověřit zadaný email, pomocí odkazu, který byl na tento email zaslán. Tento odkaz vede na webovou aplikaci, která se stará o ověřování uživatelských účtu a jako base64 je v něm zakódované id daného uživatele a hodnota autentizačního tokenu, který je vygenerován při vytvoření účtu a tvoří ho hodnota, kterou představuje náhodný řetěze, který je generován jako v předchozím případě akorát s využitím kryptograficky bezpečného náhodného čísla a data expirace, které je nastaveno na den po vygenerování. Hash jeho hodnoty a datum expirace je uloženo pro daný účet do databáze. Po otevření zaslané adresy z ní tedy webová aplikace získá id uživatele a hodnotu autentizačního tokenu, následně tedy spočítá hash získané hodnoty a zjistí zdali je pro uživatele s daným id v databázi uložený platný token hash jehož hodnoty by odpovídal vypočítanému hashy, pokud ano je účet aktivován, token odstraněn z databáze a uživatel se může přihlásit, v opačném případě se mu zobrazí chybová hláška a účet zůstane neaktivní.
+
+Pokud se uživatel přihlašuje pomocí již existujícího účtu, je na server poslán požadavek, který obsahuje uživatelem zadané uživatelské jméno, nebo email a heslo. V tomto případě je v databázi jednoduše vyhledán uživatel s daným emailem, nebo jménem a jsou získány informace s jakým algoritmem, saltem a počtem iterací byl vypočítán hash jeho hesla uložený v databázi a s pomocí těchto údajů je vypočítán hash hesla zaslaného v požadavku, pak už stačí oba hashe porovnat a v případě, že se shodují je uživatel přihlášen.
+
+Pokud uživatel zažádá o změnu hesla, je průběh téměř totožný aktivaci nového účtu, s tím rozdílem, že po úspěšném ověření webová aplikace uživatele vyzve k zadání nového hesla, vygeneruje pro něj nový salt a s jeho pomocí spočítá hash nového hesla, tyto informace jsou následně uloženy do databáze a uživatel se může přihlást pomocí nového hesla. 
+
+\subsubsection{Ukládání dat do databáze}
+Jedním z posledních problémů, které bylo třeba vyřešit, bylo jak reprezentovat uživatelská dat v databázi. Pro demonstraci toho, jaká data jsou v databázi uloženy a jaké jsou mezi nimi vztahy, slouží následující schema, pro jehož použití jsem se rozhodl, i přesto že MongoDB nemá na rozdíl od SQL databází nic jako fixní schéma, ale považoval jsem ho za vhodnější formu popisu uložených dat než slovní popis, zároveň bych chtěl ještě dodat, že pole souborů by samozřejmě opět šlo rozepsat jako one-to-many relation mezi výchozí kolekcí a kolekcí file, ale vzhledem k tomu, že kolekce file je vytvářena samotnou databází, rozhodl jsem se použít toto zjednodušení.
+\begin{listing}[!ht]
+ \includegraphics[scale=0.75, width=15cm]{pictures/schem.png}\par
+\caption{Schéma databáze}
+\end{listing}
 \newpage
 \section{Klient}
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec auctor, nisl eget aliquam aliquam, nunc nisl aliquet nisl, eget aliquet
