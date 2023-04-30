@@ -27,16 +27,16 @@ public class ClientThread extends Thread {
     private final Gson gson;
 
 
-    public ClientThread(GamesManager gamesManager, Server server, Client client, int timeout) {
+    public ClientThread(GamesManager gamesManager, Server server, Client client, int timeout, String connectionString, String databaseName, String email, String emailPassword) {
         this.gamesManager = gamesManager;
         this.server = server;
         this.timeout = timeout;
         this.client = client;
         this.connection = client.getClientSocket();
-        emailSender = new EmailSender();
+        emailSender = new EmailSender(email, emailPassword);
         userAuthenticator = new UserAuthenticator();
         gson = new Gson();
-        dbConnection = establishDbConnection("CustomChess", "org.connection", "mongodb+srv://UwU:MamRadTuhleDatabazi69@customchess.hmtwp1r.mongodb.net/?retryWrites=true&w=majority");
+        dbConnection = establishDbConnection(databaseName, "org.connection", connectionString);
 
     }
 
