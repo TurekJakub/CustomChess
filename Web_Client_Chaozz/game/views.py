@@ -274,6 +274,9 @@ def join_game(request):  # view to handel join game requests
         return JsonResponse({"games": games})
     return render(request, "game/joingame.html")  # render page on no ajax get request
 
+@ensure_csrf_cookie
+def field(request):
+    return render(request, "game/fieldgeneration.html")
 
 def initialize_game_information():  # for initializing game information on the start of the game
     global game_info

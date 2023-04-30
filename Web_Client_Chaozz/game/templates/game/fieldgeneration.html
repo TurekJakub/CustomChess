@@ -1,0 +1,64 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <title>Board builder</title>
+</head>
+
+<body >
+    <div class="container">
+        <div class="input-group mb-2 mt-5">
+            <div class="input-group-prepend">
+                <span class="input-group-text" id="">Width and height of the board</span>
+            </div>
+            <div col-xs-3>
+                <input type="text" class="form-control w-25" id="width">
+            </div>
+            <div col-xs-3>
+                <input type="text" class="form-control w-25" id="height">
+            </div>
+        </div>
+        <button id="btn-generate" class="inline m-0.5"> generate board </button>
+        <button id="btn-inaccessible" class="inline m-0.5"> set inaccessible fields </button>
+        <button id="btn-wait" class="inline m-0.5"> set wait fields </button>
+        <button id="btn-place" class="inline m-0.5"> place pieces </button>
+        <button id="btn-finish" class="inline m-0.5" onclick="window.location.href='{% url 'rulesgeneration' %}'"> generate rules </button>
+        <div class="dropdown inline pt-1">
+            <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="piecesDD">
+              Pieces
+            </button>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" id="WK">W King</a></li>
+              <li><a class="dropdown-item" id="WQ">W Queen</a></li>
+              <li><a class="dropdown-item" id="WR">W Rook</a></li>
+              <li><a class="dropdown-item" id="WB">W Bishop</a></li>
+              <li><a class="dropdown-item" id="WN">W Knight</a></li>
+              <li><a class="dropdown-item" id="WP">W Pawn</a></li>
+              <li><a class="dropdown-item" id="BK">B King</a></li>
+              <li><a class="dropdown-item" id="BQ">B Queen</a></li>
+              <li><a class="dropdown-item" id="BR">B Rook</a></li>
+              <li><a class="dropdown-item" id="BB">B Bishop</a></li>
+              <li><a class="dropdown-item" id="BN">B Knight</a></li>
+              <li><a class="dropdown-item" id="BP">B Pawn</a></li>
+            </ul>
+          </div>
+        <p id="help"></p>
+        <canvas id="canvas-board"></canvas>
+       
+    </div>
+
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/scriptboard.js' %}"></script>
+</body>
+
+
+
+
+
