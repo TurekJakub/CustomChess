@@ -2,10 +2,14 @@
   "port": 443,
   "queueLength": 2,
   "numberOfClients": 2,
-  "privateKey": "private.key",
-  "certificate": "certificate.pem",
-  "certificateChain": "certchain.pem",
+  "privateKey": "exampleprivate.key",
+  "certificate": "examplecertificate.pem",
+  "certificateChain": "examplecertchain.pem",
   "method": "jks",
   "keyStore": "./AppData/keystore.jks",
-  "keyStorePassword": "password"
+  "keyStorePassword": "password",
+  "email":"your company email here",
+  "emailPassword":"your company email password here",
+  "databaseName":"your MongoDB database name here",
+  "connectionString":"your MongoDB connection string here"
 }

@@ -15,16 +15,11 @@
 <body {%block body_atributes%}onresize="drawCanvas()" {%endblock%}>
     {%block body%}
     <script>
-        {# initializ({{ height }}, { { width } }, { { figures | safe } }, {{ tags| safe}}, {{ perma_tags| safe}},{{figures_map| safe}}); production code #}
-        initializ(15, 8, {{ figures| safe}}, {{ tags| safe}}, {{ perma_tags| safe}},{{figures_map| safe}});
+        initializ({{ height }}, { { width } }, { { figures | safe } }, {{ tags| safe}},{{figures_map| safe}});       
         $(document).ready(function () {
             drawCanvas();       
             openWebSocketConnection();       
-       });
-        {%comment%} drawCanvas(8, 8, {{ figures| safe}}); {# for testing purposes only # } {%endcomment%}
-       
-      
-      
+       });     
     </script>
     <div class="container-fluid main_container d-flex ">
         <div class=" row flex-fill align-items-top justify-content-top" style="height: calc(100vh - 80px);">
@@ -33,8 +28,9 @@
                     style="position: relative;">
                     <canvas id="canvas-background" class="rounded" style="position: absolute; z-index: 0"></canvas>
                     <canvas id="canvas-figures" style="position: absolute; z-index: 1"></canvas>
-                    <canvas id="canvas-moves" style="position: absolute; z-index: 2"></canvas>
-                    <canvas id="canvas-animations" style="position: absolute; z-index: 3"
+                    <canvas id="canvas-tags" style="position: absolute; z-index: 2"></canvas>
+                    <canvas id="canvas-moves" style="position: absolute; z-index: 3"></canvas>
+                    <canvas id="canvas-animations" style="position: absolute; z-index: 4"
                         onclick="handleClickCanvas(event)"></canvas>
                 </div>
             </div>

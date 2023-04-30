@@ -1,0 +1,6 @@
+{
+    "server_ip" : "127.0.0.1",
+    "server_port" : 443,
+    "cert_path":"C:/users/jakub/desktop/c.pem",
+    "institution":"UwU"
+}
