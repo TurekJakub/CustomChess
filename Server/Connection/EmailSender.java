@@ -14,9 +14,9 @@ import java.io.IOException;
 public class EmailSender {
     private final Mailer mailer;
 
-    public EmailSender() {
+    public EmailSender(String email, String password) {
         mailer = MailerBuilder
-                .withSMTPServer("smtp.gmail.com", 587, "jakubturek32@gmail.com", "aqenczznvodwjhvc")
+                .withSMTPServer("smtp.gmail.com", 587, email, password)
                 .withTransportStrategy(TransportStrategy.SMTP_TLS)
                 .buildMailer();
     }

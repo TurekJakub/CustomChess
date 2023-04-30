@@ -22,7 +22,6 @@ let firstFrame;
 let figuresMap = {};
 let animationImg;
 let tags = {};
-let permanentTags = {};
 const csrftoken = Cookies.get("csrftoken");
 
 // AJAX calls for data specified by requested parameter
@@ -81,14 +80,11 @@ function getNewSquerSize() {
     x = $(window).width();
   }
   a = Math.min(y / height, x / width);
-  console.log($(window).width() + ":" + $(window).height() + ":" + a);
 }
 function initializ(
   heightParam,
-  widthParam,
-  figuresParam,
-  tagsParam,
-  permanentTagsParam,
+  widthParam,  
+  tagsParam, 
   figuresMapParam
 ) {
   lastWidth = $(window).width();
@@ -96,8 +92,7 @@ function initializ(
   width = widthParam;
   figuresMap = figuresMapParam;
   figures = figuresParam;
-  tags = tagsParam;
-  permanentTags = permanentTagsParam;
+  tags = tagsParam; 
 }
 // resize given canvas to half of current window size or to screen width on small mobile dievices
 function resizeCanvas(canvas) {
@@ -128,7 +123,6 @@ async function handleClickCanvas(event) {
       if (selected) {
         unmarkMoves(document.getElementById("canvas-moves").getContext("2d"));
       }
-      console.log(key);
       moves = positions[key];
       markMoves(
         moves,
@@ -144,10 +138,8 @@ async function handleClickCanvas(event) {
       )
     ) {
       // user trigger movment of previously selected figure
-      console.log(lastSelected + " was moved at x: " + x + ", y: " + y);
       sendMove(Math.floor(x / a) + 1, Math.floor(y / a) + 1, ""); // TODO: add transcript
       unmarkMoves(document.getElementById("canvas-moves").getContext("2d"));
-      console.log(Math.floor(y / a) + 1 + "c" + (Math.floor(x / a) + 1));
       setAnimationCordinates(
         coordinates[0] - 1,
         coordinates[1] - 1,
@@ -159,12 +151,8 @@ async function handleClickCanvas(event) {
       selected = false;
       break;
     } else {
-      // user click on empty field
-      console.log(key);
-      console.log(positions[lastSelected]);
-      console.log(Math.floor(x / a) + 1 + ":" + (Math.floor(y / a) + 1));
+      // user click on empty field     
       unmarkMoves(document.getElementById("canvas-moves").getContext("2d"));
-      console.log("empty field");
       selected = false;
     }
   }
@@ -174,7 +162,6 @@ function inRange(value, rangeBorder) {
 }
 // mark possible actions of selected figure
 function markMoves(moves, ctx) {
-  console.log(moves);
   for (let i = 0; i < moves.length; i++) {
     let move = moves[i].split(":");
 
@@ -196,11 +183,7 @@ function drawFigures(figure, ctx) {
   for (const [figur, position] of Object.entries(figure)) {
     let figurName = figur; // debug something like 'let figurName = figur.split('separator')[0];' in production
     img = new Image();
-    /*
-    img.onload = function () {
-      ctx.drawImage(img, (position[0] - 1) * a, (position[1] - 1) * a, a, a);             
-    };  
-    */
+    
     img.onload = onloadFunc(
       img,
       ctx,
@@ -221,10 +204,9 @@ function resizeAllLayers() {
   resizeCanvas(document.getElementById("canvas-figures"));
   resizeCanvas(document.getElementById("canvas-moves"));
   resizeCanvas(document.getElementById("canvas-animations"));
-
+  resizeCanvas(document.getElementById("canvas-tags"));
   adjustPageLayout();
-  console.log(a);
-  //console.log(window.innerWidth + " " + window.innerHeight)
+  
 }
 // adjust page layout depending on screen size
 function adjustPageLayout() {
@@ -238,7 +220,6 @@ function adjustPageLayout() {
     $("#container-bottom").html(topContainerContent);
     lastWidth = $(window).width();
     switched = true;
-    console.log($(window).width());
   }
   // adjust height of chessboard
   $("#column-1").css("height", height * a + "px");
@@ -281,6 +262,7 @@ function drawCanvas() {
     document.getElementById("canvas-figures").getContext("2d")
   );
   markMoves(moves, document.getElementById("canvas-moves").getContext("2d"));
+  drawTags( document.getElementById("canvas-tags").getContext("2d"),tags);
 }
 
 // setter for cordinates of start and end of a moving figure's animation
@@ -301,7 +283,6 @@ function drawAnimationFrame() {
   ctx = document.getElementById("canvas-animations").getContext("2d");
 
   if (firstFrame) {
-    console.log("first frame");
     document
       .getElementById("canvas-figures")
       .getContext("2d")
@@ -331,7 +312,6 @@ function drawAnimationFrame() {
       newXCordinate = newXCordinate - 1;
     }
     newYCordinate = Math.abs((-1 * lineEquationA * newXCordinate - c) / b);
-    console.log(newXCordinate + " " + newYCordinate);
   }
 
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -355,7 +335,6 @@ function openWebSocketConnection() {
   let ws = new WebSocket("ws://" + window.location.host + "/ws/game/");
   // if websocket connection is closed it is try to by open again
   ws.onclose = function () {
-    console.log("websocket connection closed");
     openWebSocketConnection();
   };
   // called whatever data are received via websocket and handle them
@@ -397,11 +376,10 @@ function drawTags(context, tagsList) {
     i = 0;
     x = field.split(":")[0];
     y = field.split(":")[1];
-    console.log(tags);
     for (tag of tags) {
       if (tag["name"] != "unavailable") {
         context.fillStyle = tag["color"];
-        context.fillRect(x * a + i * tagSize + 1, y * a, tagSize, tagSize);
+        context.fillRect(x * a + i * tagSize + 1, y * a, tagSize, a/10);
         i++;
       } else {
         context.fillStyle = "rgba(0, 0, 0, 0.5)";

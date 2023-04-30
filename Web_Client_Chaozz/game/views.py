@@ -27,10 +27,7 @@ game_info = {  # TODO: parsr this from one map
     "moves": {"1,3,jump": {"1,3,rest_of_String": ["x2,_y2"]}},
     # moves of figures, format: {"x,y,fig_move_name": {"x,y,rest_of_String": ["x2,_y2"]}}
     "figures": {"pawn": "1,_3"},
-    # positions of figures, format: {"figure_name": "x,_y"}
-    "perma_tags": {
-        "2:1": [{"color": "blue", "name": "unavailable"}]
-    },  # positions of tags that are not removed after turn, format: {'x:y': [tag1, tag2, ...], ...}
+    # positions of figures, format: {"figure_name": "x,_y"}   
     "tags": {"2:1": [{"color": "blue", "name": "unavailable"}]},
     # positions of tags, format: {'x:y': [tag1, tag2, ...], ...}
     "figures_map": {"pawn": "pawn.svg", "test": "pawn.svg", "pawn2": "pawn.svg"},
@@ -284,9 +281,8 @@ def initialize_game_information():  # for initializing game information on the s
     if game_info["height"] == -1:
         input = connection.recieve_data().split(":")
         game_info["height"] = input[0]
-        game_info["width"] = input[1]
-        game_info["perma_tags"] = input[2]
-        update_game_information(input[3:6])
+        game_info["width"] = input[1]      
+        update_game_information(input[2:5])
 
 
 def update_game_information(
