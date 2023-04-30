@@ -10,13 +10,17 @@ public class ServerParameters {
     private String certificate;
     private String certificateChain;
     private String keyStore;
-    private  String keyStorePassword;
-    private  String method;
+    private String keyStorePassword;
+    private String method;
+    private String connectionString;
+    private String databaseName;
+    private String emailPassword;
+    private String email;
 
     public ServerParameters() {
     }
 
-    public ServerParameters(int port, int queueLength, int numberOfClients, int timeout, String privateKey, String certificate, String certificateChain, String keyStore, String keyStorePassword, String method) {
+    public ServerParameters(int port, int queueLength, int numberOfClients, int timeout, String privateKey, String certificate, String certificateChain, String keyStore, String keyStorePassword, String method, String connectionString, String databaseName, String emailPassword, String email) {
         this.port = port;
         this.queueLength = queueLength;
         this.numberOfClients = numberOfClients;
@@ -27,8 +31,23 @@ public class ServerParameters {
         this.keyStore = keyStore;
         this.keyStorePassword = keyStorePassword;
         this.method = method;
+        this.connectionString = connectionString;
+        this.databaseName = databaseName;
+        this.emailPassword = emailPassword;
+        this.email = email;
     }
-
+    public getEmail(){
+        return email;
+    }
+    public getEmailPassword(){
+        return emailPassword;
+    }
+    public getConnectionString(){
+        return connectionString;
+    }
+    public getDatabaseName(){
+        return databaseName;
+    }      
     public int getPort() {
         return port;
     }

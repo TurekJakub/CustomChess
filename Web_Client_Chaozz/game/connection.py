@@ -1,6 +1,7 @@
 import threading
 import socket as s
 import ssl
+import json
 
 connection = None
 
@@ -16,15 +17,16 @@ def get_connection():
 
 class Connection:
     def __init__(self):
-        self.connection = self.establish_connectio("127.0.0.1", 443, "UwU")
+        params = self.parse_connection_params()
+        self.connection = self.establish_connectio(params['server_ip'],params['server_port'], params['institution'],params['cert_path'])
         self.message = ""
         self.waiting = False
 
-    def establish_connectio(self, host, port, host_name):
+    def establish_connectio(self, host, port, host_name,cert_path):
         context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
         context.verify_mode = ssl.CERT_REQUIRED
         context.load_verify_locations(
-            "C:/users/jakub/desktop/c.pem"
+            cert_path
         )  # path to certificate file set for testing certificate
         socket = s.create_connection((host, port))
         return context.wrap_socket(socket, server_hostname=host_name)
@@ -76,3 +78,12 @@ class Connection:
 
     def get_message(self):
         return self.message
+    
+    def parse_connection_params(self):
+      try:
+        with open('./config.json', 'r') as config_file:
+          content = config_file.read()
+          return json.loads(content)
+      except:
+        print("Error while parsing config file")
+        return None
