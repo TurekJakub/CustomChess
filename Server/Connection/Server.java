@@ -19,6 +19,10 @@ public class Server extends Thread {
     private final QueueManager queueManager;
     private final GamesManager gamesManager;
     private final int timeout;
+    private final String databaseName;
+    private final String connectionString;
+    private final String email;
+    private final String emailPassword;
 
     public Server(ServerParameters serverParameters) throws IOException {
         SecureConnectionManager secureConnectionManager = new SecureConnectionManager(serverParameters);
@@ -32,6 +36,10 @@ public class Server extends Thread {
         reconnectingClients = new ArrayList<>();
         timeout = serverParameters.getTimeout();
         queueManager = new QueueManager(this);
+        databaseName = serverParameters.getDatabaseName();
+        connectionString = serverParameters.getConnectionString();
+        email = serverParameters.getEmail();
+        emailPassword = serverParameters.getEmailPassword();
     }
 
     @Override
@@ -103,7 +111,7 @@ public class Server extends Thread {
 
     // start ClientThread for new client
     public synchronized void startClientThread(Client client) {
-        ClientThread clientThread = new ClientThread(gamesManager, this, client, timeout);
+        ClientThread clientThread = new ClientThread(gamesManager, this, client, timeout,connectionString,databaseName,email,emailPassword);
         clientThread.start();
         clientsThreads.add(clientThread);
 
